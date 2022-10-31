@@ -1,5 +1,16 @@
 let lib = import "src/lib.lx"
-print("hello world!")
+
+fn pp(arr) {
+  if type(arr) == "array" {
+    print(lib.join(arr, ""))
+  } else {
+    print(arr)
+  }
+}
+
+pp("hello world!")
 print(keys(lib))
-print(lib.tohex(255))
-print(lib.tohex(16))
+
+pp([1234, ":\t", lib.tohex(1234)])
+pp([255, ":\t", lib.tohex(255)])
+pp([16, ":\t", lib.tohex(16)])

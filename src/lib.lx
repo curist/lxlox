@@ -15,7 +15,7 @@ let lib = {
       [13]: "d", [14]: "e", [15]: "f",
     }
     if num < 0 or num > 255 {
-      return "00"
+      return nil
     }
     let x = lib.floor(num / 16)
     let y = num % 16
