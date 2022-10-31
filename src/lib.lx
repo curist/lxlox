@@ -1,0 +1,24 @@
+let lib = {
+  floor: fn(num) {
+    // ^ not yet decide if we want a int() builtin
+    //   or leave the implementation in a Math module
+    return Lx.int(num)
+  },
+  join: fn(arr, sep) {
+    // ^ not yet decide if we want a join() builtin
+    //   or leave the implementation in an Array module
+    return Lx.join(arr, sep)
+  },
+  tohex: fn(num) {
+    let map = {
+      [10]: "a", [11]: "b", [12]: "c",
+      [13]: "d", [14]: "e", [15]: "f",
+    }
+    if num < 0 or num > 255 {
+      return "00"
+    }
+    let x = lib.floor(num / 16)
+    let y = num % 16
+    return lib.join([map[x] or x, map[y] or y], "")
+  },
+}

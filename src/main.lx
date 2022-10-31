@@ -1,0 +1,5 @@
+let lib = import "src/lib.lx"
+print("hello world!")
+print(keys(lib))
+print(lib.tohex(255))
+print(lib.tohex(16))
