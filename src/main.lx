@@ -22,7 +22,7 @@ fn main() {
 
   let line = -1
 
-  for ;; {
+  for true {
     let token = scanner.scanToken()
 
     let lineInfo = if token.line != line {

@@ -13,15 +13,6 @@ let lib = {
     let i = start - 1
     fn() { i = i + 1 }
   },
-  isDigit: fn(n) { n >= "0" and n <= "9" },
-  enumNameMapper: fn(enum) {
-    let enumKeys = keys(enum)
-    let mapping = {}
-    for let i = 0; i < len(enumKeys); i = i + 1 {
-      mapping[enum[enumKeys[i]]] = enumKeys[i]
-    }
-    return mapping
-  },
   tohex: fn(num) {
     let map = {
       [10]: "a", [11]: "b", [12]: "c",

@@ -14,14 +14,20 @@ fn initScanner(src) {
     return srcLen == state.current
   }
 
-  fn Token(type) {
+  fn getLexeme() {
     let lexeme = ""
-    for let i = state.start; i < state.current; i = i + 1 {
+    let i = state.start
+    for i < state.current {
       lexeme = lexeme + src[i]
+      i = i + 1
     }
+    return lexeme
+  }
+
+  fn Token(type) {
     return {
       type: type,
-      lexeme: lexeme,
+      lexeme: getLexeme(),
       line: state.line,
     }
   }
@@ -84,6 +90,8 @@ fn initScanner(src) {
     [")"]: fn() { Token(TOKEN.RIGHT_PAREN) },
     ["{"]: fn() { Token(TOKEN.LEFT_BRACE) },
     ["}"]: fn() { Token(TOKEN.RIGHT_BRACE) },
+    ["["]: fn() { Token(TOKEN.LEFT_BRACKET) },
+    ["]"]: fn() { Token(TOKEN.RIGHT_BRACKET) },
     [";"]: fn() { Token(TOKEN.SEMICOLON) },
     [","]: fn() { Token(TOKEN.COMMA) },
     ["."]: fn() { Token(TOKEN.DOT) },
@@ -92,12 +100,10 @@ fn initScanner(src) {
     ["+"]: fn() { Token(TOKEN.PLUS) },
     ["/"]: fn() { Token(TOKEN.SLASH) },
     ["*"]: fn() { Token(TOKEN.STAR) },
-    // XXX: has bug in jslox that prevent us to do
-    // `let x = if foo {} else bar`
-    ["!"]: fn() { if match("=") { Token(TOKEN.BANG_EQUAL) } else Token(TOKEN.BANG) },
-    ["="]: fn() { if match("=") { Token(TOKEN.EQUAL_EQUAL) } else Token(TOKEN.EQUAL) },
-    ["<"]: fn() { if match("=") { Token(TOKEN.LESS_EQUAL) } else Token(TOKEN.LESS) },
-    [">"]: fn() { if match("=") { Token(TOKEN.GREATER_EQUAL) } else Token(TOKEN.GREATER) },
+    ["!"]: fn() { Token(if match("=") { TOKEN.BANG_EQUAL } else TOKEN.BANG) },
+    ["="]: fn() { Token(if match("=") { TOKEN.EQUAL_EQUAL } else TOKEN.EQUAL) },
+    ["<"]: fn() { Token(if match("=") { TOKEN.LESS_EQUAL } else TOKEN.LESS) },
+    [">"]: fn() { Token(if match("=") { TOKEN.GREATER_EQUAL } else TOKEN.GREATER) },
     ["\""]: fn() {
       for peek() != "\"" and !isAtEnd() {
         if peek() == "\n" {
@@ -114,15 +120,30 @@ fn initScanner(src) {
     },
   }
 
+  fn isDigit(n) { n >= "0" and n <= "9" }
+  fn isAlpha(c) {
+    (c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or c == "_"
+  }
+
   fn number() {
-    for lib.isDigit(peek()) { advance() }
-    if peek() == "." and lib.isDigit(peekNext()) {
+    for isDigit(peek()) { advance() }
+    if peek() == "." and isDigit(peekNext()) {
       // consume the "."
       advance()
 
-      for lib.isDigit(peek()) { advance() }
+      for isDigit(peek()) { advance() }
     }
     return Token(TOKEN.NUMBER)
+  }
+
+  fn identifier() {
+    for isAlpha(peek()) or isDigit(peek()) { advance() }
+    let lexeme = getLexeme()
+    let isKeyword = types.KEYWORDS[lexeme]
+
+    return Token(if isKeyword {
+      TOKEN[Lx.toUpperCase(lexeme)]
+    } else TOKEN.IDENTIFIER)
   }
 
   fn scanToken() {
@@ -135,18 +156,18 @@ fn initScanner(src) {
 
     let c = advance()
 
-    if lib.isDigit(c) {
-      return number()
-    }
+    if isAlpha(c) { return identifier() }
+    if isDigit(c) { return number() }
 
     if let handler = tokenHandlers[c] {
       return handler()
     }
 
-    return errorToken("Unexpected character.")
+    return errorToken("Unexpected character: " + c)
   }
 
   return {
     scanToken: scanToken
   }
 }
+

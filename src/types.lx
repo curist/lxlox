@@ -2,6 +2,16 @@ let lib = import "src/lib.lx"
 
 let types = {}
 
+
+fn enumNameMapper(enum) {
+  let enumKeys = keys(enum)
+  let mapping = {}
+  for let i = 0; i < len(enumKeys); i = i + 1 {
+    mapping[enum[enumKeys[i]]] = enumKeys[i]
+  }
+  return mapping
+}
+
 types.TOKEN = {
   let iota
   {
@@ -69,6 +79,19 @@ types.TOKEN = {
     EOF: 999,
   }
 }
-types.TOKEN_NAME = lib.enumNameMapper(types.TOKEN)
+types.TOKEN_NAME = enumNameMapper(types.TOKEN)
+
+types.KEYWORDS = {
+  let tokenKeys = keys(types.TOKEN)
+  let mapping = {}
+  for let i = 0; i < len(tokenKeys); i = i + 1 {
+    let tokenKey = tokenKeys[i]
+    let enum = types.TOKEN[tokenKey]
+    if enum >= 400 and enum < 500 {
+      mapping[Lx.toLowerCase(tokenKey)] = true
+    }
+  }
+  mapping
+}
 
 types
