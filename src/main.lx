@@ -1,4 +1,5 @@
 let lib = import "src/lib.lx"
+let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
 
 fn pp(arr) {
@@ -9,11 +10,39 @@ fn pp(arr) {
   }
 }
 
-// TODO: use `xxd -r -p` in the future to pack bytecodes into bin file
-if len(Lx.args) != 2 {
-  pp(["Usage: lxlox <path>"])
-  Lx.exit(64)
+fn main() {
+  // TODO: use `xxd -r -p` in the future to pack bytecodes into bin file
+  if len(Lx.args) != 2 {
+    pp(["Usage: lxlox <path>"])
+    Lx.exit(64)
+  }
+
+  let source = Lx.readTextFile(Lx.args[1])
+  let scanner = initScanner(source)
+
+  let line = -1
+
+  for ;; {
+    let token = scanner.scanToken()
+
+    let lineInfo = if token.line != line {
+      lib.padStart(token.line, 4, " ")
+    } else {
+      "   | "
+    }
+    pp([
+      lineInfo,
+      " ", token.type, " ",
+      lib.padRight(token.lexeme, 30, " "),
+      "\t| ",
+      types.TOKEN_NAME[token.type],
+    ])
+
+    if token.type == types.TOKEN.EOF {
+      break
+    }
+  }
+
 }
 
-let source = Lx.readTextFile(Lx.args[1])
-initScanner(source)
+main()

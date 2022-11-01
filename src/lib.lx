@@ -9,6 +9,18 @@ let lib = {
     //   or leave the implementation in an Array module
     return Lx.join(arr, sep)
   },
+  iota: fn (start) {
+    let i = start - 1
+    fn() { i = i + 1 }
+  },
+  enumNameMapper: fn(enum) {
+    let enumKeys = keys(enum)
+    let mapping = {}
+    for let i = 0; i < len(enumKeys); i = i + 1 {
+      mapping[enum[enumKeys[i]]] = enumKeys[i]
+    }
+    return mapping
+  },
   tohex: fn(num) {
     let map = {
       [10]: "a", [11]: "b", [12]: "c",
@@ -20,5 +32,23 @@ let lib = {
     let x = lib.floor(num / 16)
     let y = num % 16
     return lib.join([map[x] or x, map[y] or y], "")
+  },
+  padStart: fn(n, length, c) {
+    let s = str(n)
+    if len(s) >= length {
+      return s
+    }
+    for len(s) < length {
+      s = c + s
+    }
+  },
+  padRight: fn(n, length, c) {
+    let s = str(n)
+    if len(s) >= length {
+      return s
+    }
+    for len(s) < length {
+      s = s + c
+    }
   },
 }

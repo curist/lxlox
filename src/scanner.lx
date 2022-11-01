@@ -1,8 +1,72 @@
+let types = import "src/types.lx"
+
+let TOKEN = types.TOKEN
+
 fn initScanner(src) {
   let state = {
     start: 0,
     current: 0,
     line: 1,
   }
-  print(src)
+
+  let srcLen = len(src)
+  fn isAtEnd() { srcLen == state.current }
+
+  fn Token(type) {
+    let lexeme = ""
+    for let i = start.start; i < state.current; i = i + 1 {
+      lexeme = lexeme + src[i]
+    }
+    return {
+      type: type,
+      lexeme: lexeme,
+      line: state.line,
+    }
+  }
+
+  fn errorToken(message) {
+    return {
+      type: TOKEN.ERROR,
+      lexeme: message,
+      line: state.line,
+    }
+  }
+
+  fn advance() {
+    let current = state.current
+    state.current = current + 1
+    return src[current - 1]
+  }
+
+  let singleCharTokenHandlers = {
+    ["("]: fn() { Token(TOKEN.LEFT_PAREN) },
+    [")"]: fn() { Token(TOKEN.RIGHT_PAREN) },
+    ["{"]: fn() { Token(TOKEN.LEFT_BRACE) },
+    ["}"]: fn() { Token(TOKEN.RIGHT_BRACE) },
+    [";"]: fn() { Token(TOKEN.SEMICOLON) },
+    [","]: fn() { Token(TOKEN.COMMA) },
+    ["."]: fn() { Token(TOKEN.DOT) },
+    ["-"]: fn() { Token(TOKEN.MINUS) },
+    ["%"]: fn() { Token(TOKEN.MOD) },
+    ["+"]: fn() { Token(TOKEN.PLUS) },
+    ["/"]: fn() { Token(TOKEN.SLASH) },
+    ["*"]: fn() { Token(TOKEN.STAR) },
+  }
+
+  return {
+    scanToken: fn() {
+      state.start = state.current
+
+      if isAtEnd() {
+        return Token(TOKEN.EOF)
+      }
+
+      let c = advance()
+      if let handler = singleCharTokenHandlers[c] {
+        return handler()
+      }
+
+      return errorToken("Unexpected character.")
+    },
+  }
 }
