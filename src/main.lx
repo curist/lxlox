@@ -8,9 +8,12 @@ fn pp(arr) {
   }
 }
 
-pp("hello world!")
-print(keys(lib))
+// TODO: use `xxd -r -p` in the future to pack bytecodes into bin file
+if len(Lx.args) != 2 {
+  pp(["Usage: lxlox <path>"])
+  Lx.exit(64)
+}
 
-pp([1234, ":\t", lib.tohex(1234)])
-pp([255, ":\t", lib.tohex(255)])
-pp([16, ":\t", lib.tohex(16)])
+let source = Lx.readTextFile(Lx.args[1])
+print(source)
+
