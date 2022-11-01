@@ -13,6 +13,7 @@ let lib = {
     let i = start - 1
     fn() { i = i + 1 }
   },
+  isDigit: fn(n) { n >= "0" and n <= "9" },
   enumNameMapper: fn(enum) {
     let enumKeys = keys(enum)
     let mapping = {}

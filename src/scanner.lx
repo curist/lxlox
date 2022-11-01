@@ -1,3 +1,4 @@
+let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let TOKEN = types.TOKEN
 
@@ -9,7 +10,9 @@ fn initScanner(src) {
   }
 
   let srcLen = len(src)
-  fn isAtEnd() { srcLen == state.current }
+  fn isAtEnd() {
+    return srcLen == state.current
+  }
 
   fn Token(type) {
     let lexeme = ""
@@ -95,23 +98,55 @@ fn initScanner(src) {
     ["="]: fn() { if match("=") { Token(TOKEN.EQUAL_EQUAL) } else Token(TOKEN.EQUAL) },
     ["<"]: fn() { if match("=") { Token(TOKEN.LESS_EQUAL) } else Token(TOKEN.LESS) },
     [">"]: fn() { if match("=") { Token(TOKEN.GREATER_EQUAL) } else Token(TOKEN.GREATER) },
+    ["\""]: fn() {
+      for peek() != "\"" and !isAtEnd() {
+        if peek() == "\n" {
+          state.line = state.line + 1
+        }
+        advance()
+      }
+
+      if isAtEnd() { return errorToken("Unterminated string.") }
+
+      // closing quote.
+      advance()
+      return Token(TOKEN.STRING)
+    },
+  }
+
+  fn number() {
+    for lib.isDigit(peek()) { advance() }
+    if peek() == "." and lib.isDigit(peekNext()) {
+      // consume the "."
+      advance()
+
+      for lib.isDigit(peek()) { advance() }
+    }
+    return Token(TOKEN.NUMBER)
+  }
+
+  fn scanToken() {
+    skipWhitespace()
+    state.start = state.current
+
+    if isAtEnd() {
+      return Token(TOKEN.EOF)
+    }
+
+    let c = advance()
+
+    if lib.isDigit(c) {
+      return number()
+    }
+
+    if let handler = tokenHandlers[c] {
+      return handler()
+    }
+
+    return errorToken("Unexpected character.")
   }
 
   return {
-    scanToken: fn() {
-      skipWhitespace()
-      state.start = state.current
-
-      if isAtEnd() {
-        return Token(TOKEN.EOF)
-      }
-
-      let c = advance()
-      if let handler = tokenHandlers[c] {
-        return handler()
-      }
-
-      return errorToken("Unexpected character.")
-    },
+    scanToken: scanToken
   }
 }
