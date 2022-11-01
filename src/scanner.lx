@@ -48,6 +48,24 @@ fn initScanner(src) {
     return true
   }
 
+  fn peek() {
+    return src[state.current]
+  }
+
+  fn skipWhitespace() {
+    for !isAtEnd() {
+      let c = peek()
+      if c == " " or c == "\r" or c == "\t" {
+        advance()
+      } else if c == "\n" {
+        state.line = state.line + 1
+        advance()
+      } else {
+        return
+      }
+    }
+  }
+
   let tokenHandlers = {
     ["("]: fn() { Token(TOKEN.LEFT_PAREN) },
     [")"]: fn() { Token(TOKEN.RIGHT_PAREN) },
@@ -71,6 +89,7 @@ fn initScanner(src) {
 
   return {
     scanToken: fn() {
+      skipWhitespace()
       state.start = state.current
 
       if isAtEnd() {
