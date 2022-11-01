@@ -1,5 +1,4 @@
 let types = import "src/types.lx"
-
 let TOKEN = types.TOKEN
 
 fn initScanner(src) {
@@ -14,7 +13,7 @@ fn initScanner(src) {
 
   fn Token(type) {
     let lexeme = ""
-    for let i = start.start; i < state.current; i = i + 1 {
+    for let i = state.start; i < state.current; i = i + 1 {
       lexeme = lexeme + src[i]
     }
     return {
@@ -35,10 +34,21 @@ fn initScanner(src) {
   fn advance() {
     let current = state.current
     state.current = current + 1
-    return src[current - 1]
+    return src[current]
   }
 
-  let singleCharTokenHandlers = {
+  fn match(expected) {
+    if isAtEnd() {
+      return false
+    }
+    if src[state.current] != expected {
+      return false
+    }
+    state.current = state.current + 1
+    return true
+  }
+
+  let tokenHandlers = {
     ["("]: fn() { Token(TOKEN.LEFT_PAREN) },
     [")"]: fn() { Token(TOKEN.RIGHT_PAREN) },
     ["{"]: fn() { Token(TOKEN.LEFT_BRACE) },
@@ -51,6 +61,12 @@ fn initScanner(src) {
     ["+"]: fn() { Token(TOKEN.PLUS) },
     ["/"]: fn() { Token(TOKEN.SLASH) },
     ["*"]: fn() { Token(TOKEN.STAR) },
+    // XXX: has bug in jslox that prevent us to do
+    // `let x = if foo {} else bar`
+    ["!"]: fn() { if match("=") { Token(TOKEN.BANG_EQUAL) } else Token(TOKEN.BANG) },
+    ["="]: fn() { if match("=") { Token(TOKEN.EQUAL_EQUAL) } else Token(TOKEN.EQUAL) },
+    ["<"]: fn() { if match("=") { Token(TOKEN.LESS_EQUAL) } else Token(TOKEN.LESS) },
+    [">"]: fn() { if match("=") { Token(TOKEN.GREATER_EQUAL) } else Token(TOKEN.GREATER) },
   }
 
   return {
@@ -62,7 +78,7 @@ fn initScanner(src) {
       }
 
       let c = advance()
-      if let handler = singleCharTokenHandlers[c] {
+      if let handler = tokenHandlers[c] {
         return handler()
       }
 
