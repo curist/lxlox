@@ -1,4 +1,5 @@
 let lib = import "src/lib.lx"
+let initScanner = import "src/scanner.lx"
 
 fn pp(arr) {
   if type(arr) == "array" {
@@ -15,5 +16,4 @@ if len(Lx.args) != 2 {
 }
 
 let source = Lx.readTextFile(Lx.args[1])
-print(source)
-
+initScanner(source)

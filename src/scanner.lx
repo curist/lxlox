@@ -1,0 +1,8 @@
+fn initScanner(src) {
+  let state = {
+    start: 0,
+    current: 0,
+    line: 1,
+  }
+  print(src)
+}
