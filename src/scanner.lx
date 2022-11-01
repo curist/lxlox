@@ -52,6 +52,10 @@ fn initScanner(src) {
     return src[state.current]
   }
 
+  fn peekNext() {
+    if isAtEnd() { nil } else src[state.current + 1]
+  }
+
   fn skipWhitespace() {
     for !isAtEnd() {
       let c = peek()
@@ -60,6 +64,12 @@ fn initScanner(src) {
       } else if c == "\n" {
         state.line = state.line + 1
         advance()
+      } else if c == "/" {
+        if peekNext() == "/" {
+          for peek() != "\n" and !isAtEnd() { advance() }
+        } else {
+          return
+        }
       } else {
         return
       }
