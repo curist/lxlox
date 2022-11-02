@@ -21,7 +21,9 @@ let VERSION = 0
 let ValueType = {
   let iota = lib.iota(0)
   {
-    DOUBLE:    iota(),
+    BOOL:    iota(),
+    NIL:     iota(),
+    DOUBLE:  iota(),
   }
 }
 
