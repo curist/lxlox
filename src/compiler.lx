@@ -10,7 +10,7 @@ let mod = {}
 let PREC = {
   let iota = lib.iota(0)
   {
-    NONE: iota(),
+    NONE:       iota(),
     ASSIGNMENT: iota(),  // =
     OR: iota(),          // or
     AND: iota(),         // and
@@ -202,15 +202,25 @@ mod.compile = fn(src) {
     parsePrecedence(rule.precedence + 1)
 
     let opCodes = {
-      [TOKEN.PLUS]: OP.ADD,
-      [TOKEN.MINUS]: OP.SUBTRACT,
-      [TOKEN.STAR]: OP.MULTIPLY,
-      [TOKEN.SLASH]: OP.DIVIDE,
-      [TOKEN.MOD]: OP.MOD,
+      [TOKEN.BANG_EQUAL]:    [OP.EQUAL, OP.NOT],
+      [TOKEN.EQUAL_EQUAL]:    OP.EQUAL,
+      [TOKEN.GREATER]:        OP.GREATER,
+      [TOKEN.GREATER_EQUAL]: [OP.LESS, OP.NOT],
+      [TOKEN.LESS]:           OP.LESS,
+      [TOKEN.LESS_EQUAL]:    [OP.GREATER, OP.NOT],
+      [TOKEN.PLUS]:           OP.ADD,
+      [TOKEN.MINUS]:          OP.SUBTRACT,
+      [TOKEN.STAR]:           OP.MULTIPLY,
+      [TOKEN.SLASH]:          OP.DIVIDE,
+      [TOKEN.MOD]:            OP.MOD,
     }
-    let opCode = opCodes[operatorType]
-    if opCode {
-      emitByte(opCode)
+    let codes = opCodes[operatorType]
+    if codes {
+      if type(codes) == "array" {
+        emitBytes(codes[0], codes[1])
+      } else {
+        emitByte(codes)
+      }
     } else {
       // unreable, supposely
       error("bad binary op: " + types.TOKEN_NAME[operatorType])
@@ -285,13 +295,13 @@ mod.compile = fn(src) {
     [TOKEN.STAR]          : [nil,      binary, PREC.FACTOR],
     [TOKEN.MOD]           : [nil,      binary, PREC.FACTOR],
     [TOKEN.BANG]          : [unary,    nil,    PREC.NONE],
-    [TOKEN.BANG_EQUAL]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.BANG_EQUAL]    : [nil,      binary, PREC.EQUALITY],
     [TOKEN.EQUAL]         : [nil,      nil,    PREC.NONE],
-    [TOKEN.EQUAL_EQUAL]   : [nil,      nil,    PREC.NONE],
-    [TOKEN.GREATER]       : [nil,      nil,    PREC.NONE],
-    [TOKEN.GREATER_EQUAL] : [nil,      nil,    PREC.NONE],
-    [TOKEN.LESS]          : [nil,      nil,    PREC.NONE],
-    [TOKEN.LESS_EQUAL]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.EQUAL_EQUAL]   : [nil,      binary, PREC.EQUALITY],
+    [TOKEN.GREATER]       : [nil,      binary, PREC.COMPARISON],
+    [TOKEN.GREATER_EQUAL] : [nil,      binary, PREC.COMPARISON],
+    [TOKEN.LESS]          : [nil,      binary, PREC.COMPARISON],
+    [TOKEN.LESS_EQUAL]    : [nil,      binary, PREC.COMPARISON],
     [TOKEN.IDENTIFIER]    : [nil,      nil,    PREC.NONE],
     [TOKEN.STRING]        : [nil,      nil,    PREC.NONE],
     [TOKEN.NUMBER]        : [number    nil,    PREC.NONE],
