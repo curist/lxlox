@@ -10,35 +10,27 @@ fn initScanner(src) {
   }
 
   let srcLen = len(src)
-  fn isAtEnd() {
-    return srcLen == state.current
-  }
+  fn isAtEnd() { srcLen == state.current }
 
   fn getLexeme() {
     let lexeme = ""
-    let i = state.start
-    for i < state.current {
+
+    for let i = state.start; i < state.current; i = i + 1 {
       lexeme = lexeme + src[i]
-      i = i + 1
-    }
-    return lexeme
-  }
-
-  fn Token(type) {
-    return {
-      type: type,
-      lexeme: getLexeme(),
-      line: state.line,
     }
   }
 
-  fn errorToken(message) {
-    return {
-      type: TOKEN.ERROR,
-      lexeme: message,
-      line: state.line,
-    }
-  }
+  fn Token(type) {{
+    type: type,
+    lexeme: getLexeme(),
+    line: state.line,
+  }}
+
+  fn errorToken(message) {{
+    type: TOKEN.ERROR,
+    lexeme: message,
+    line: state.line,
+  }}
 
   fn advance() {
     let current = state.current
@@ -57,9 +49,7 @@ fn initScanner(src) {
     return true
   }
 
-  fn peek() {
-    return src[state.current]
-  }
+  fn peek() { src[state.current] }
 
   fn peekNext() {
     if isAtEnd() { nil } else src[state.current + 1]
@@ -112,11 +102,13 @@ fn initScanner(src) {
         advance()
       }
 
+      // TODO: handle escape sequence
+
       if isAtEnd() { return errorToken("Unterminated string.") }
 
       // closing quote.
       advance()
-      return Token(TOKEN.STRING)
+      Token(TOKEN.STRING)
     },
   }
 
@@ -133,7 +125,7 @@ fn initScanner(src) {
 
       for isDigit(peek()) { advance() }
     }
-    return Token(TOKEN.NUMBER)
+    Token(TOKEN.NUMBER)
   }
 
   fn identifier() {
@@ -141,33 +133,30 @@ fn initScanner(src) {
     let lexeme = getLexeme()
     let isKeyword = types.KEYWORDS[lexeme]
 
-    return Token(if isKeyword {
-      TOKEN[Lx.toUpperCase(lexeme)]
-    } else TOKEN.IDENTIFIER)
+    Token(if isKeyword { TOKEN[Lx.toUpperCase(lexeme)] } else TOKEN.IDENTIFIER)
   }
 
-  fn scanToken() {
-    skipWhitespace()
-    state.start = state.current
-
-    if isAtEnd() {
-      return Token(TOKEN.EOF)
-    }
-
-    let c = advance()
-
-    if isAlpha(c) { return identifier() }
-    if isDigit(c) { return number() }
-
-    if let handler = tokenHandlers[c] {
-      return handler()
-    }
-
-    return errorToken("Unexpected character: " + c)
-  }
 
   return {
-    scanToken: scanToken
+    scanToken: fn() {
+      skipWhitespace()
+      state.start = state.current
+
+      if isAtEnd() {
+        return Token(TOKEN.EOF)
+      }
+
+      let c = advance()
+
+      if isAlpha(c) { return identifier() }
+      if isDigit(c) { return number() }
+
+      if let handler = tokenHandlers[c] {
+        return handler()
+      }
+
+      errorToken("Unexpected character: " + c)
+    },
   }
 }
 
