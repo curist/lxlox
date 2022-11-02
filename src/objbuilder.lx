@@ -102,7 +102,7 @@ fn objbuilder(chunks) {
 
   // update obj size
   let totalSize = len(obj)
-  writeBytesAt(obj, int32ToBytes(totalSize), 6)
+  writeBytesAt(obj, int32ToBytes(totalSize), 3)
 
   return {
     obj: obj,
