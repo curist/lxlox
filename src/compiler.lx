@@ -1,5 +1,8 @@
+let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
+
+let TOKEN = types.TOKEN
 
 let mod = {}
 
@@ -35,28 +38,68 @@ mod.debugPrint = fn(src) {
 mod.compile = fn(src) {
   let scanner = initScanner(src)
 
+  // XXX: future
+  // TODO: put line info as debug info, as part of the bin format
   let line = -1
 
-  for true {
-    let token = scanner.scanToken()
+  let bytecode = []
+  let constants = []
 
-    let lineInfo = if token.line != line {
-      lib.padStart(token.line, 4, " ")
-    } else {
-      "   | "
-    }
+  let parser = {
+    current: 0,
+    previous: 0,
+    hadError: false,
+  }
+
+  fn push(code) {
+    bytecode = append(bytecode, lib.tohex(code))
+  }
+
+  fn pushConstant(constant) {
+    // TODO: check the type of the constant
+    // and figure out how do we present it in `constants` array
+    // XXX: should we keep a seperated constants counter?
+  }
+
+  fn errorAt(token, message) {
     pp([
-      lineInfo,
-      " ", token.type, " ",
-      lib.padRight(token.lexeme, 30, " "),
-      "\t| ",
-      types.TOKEN_NAME[token.type],
+      "[line ", token.line, "]",
+      if token.type == TOKEN.EOF {
+        " at end"
+      } else if token.type == TOKEN.ERROR {
+        ""
+      } else {
+        " at '" + token.lexeme + "'"
+      },
+      ": ", message,
     ])
+    parser.hadError = true
+  }
 
-    if token.type == types.TOKEN.EOF {
-      break
+  fn error(message) {
+    errorAt(parser.previous, message)
+  }
+
+  fn errorAtCurrent(message) {
+    errorAt(parser.current, message)
+  }
+
+  fn advance() {
+    parser.previous = parser.current
+    for true {
+      parser.current = scanner.scanToken()
+      if parser.current.type != TOKEN.ERROR {
+        break
+      }
+      errorAtCurrent("not sure what to put here")
     }
   }
+
+  advance()
+  expression()
+  consume(TOKEN.EOF, "Expect end of expression.")
+
+  return !parser.hadError
 }
 
 mod
