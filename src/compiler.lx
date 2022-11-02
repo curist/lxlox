@@ -7,6 +7,25 @@ let OP = types.OP
 
 let mod = {}
 
+let PREC = {
+  let iota = lib.iota(0)
+  {
+    NONE: iota(),
+    ASSIGNMENT: iota(),  // =
+    OR: iota(),          // or
+    AND: iota(),         // and
+    EQUALITY: iota(),    // == !=
+    COMPARISON: iota(),  // < > <= >=
+    TERM: iota(),        // + -
+    FACTOR: iota(),      // * /
+    UNARY: iota(),       // ! -
+    CALL: iota(),        // . ()
+    PRIMARY: iota(),
+    // XXX: what about [] index access pattern?
+    // how do we resolve conflict between hashmap & block?
+  }
+}
+
 mod.debugPrint = fn(src) {
   let scanner = initScanner(src)
 
@@ -132,7 +151,7 @@ mod.compile = fn(src) {
       if parser.current.type != TOKEN.ERROR {
         break
       }
-      errorAtCurrent("not sure what to put here")
+      errorAtCurrent(parser.current.lexeme)
     }
   }
 
@@ -167,8 +186,29 @@ mod.compile = fn(src) {
     }
   }
 
-  fn expression() {
+  fn unary() {
+    let opType = parser.previous.type
 
+    parsePrecedence(PREC.UNARY)
+
+    let opCodes = {
+      [TOKEN.MINUS]: OP.NEGATE,
+    }
+    let opCode = opCodes[opType]
+    if opCode {
+      emitByte(opCode)
+    } else {
+      // unreaable, supposely
+      error("bad unary op: " + types.TOKEN_NAME[opType])
+    }
+  }
+
+  fn parsePrecedence(prec) {
+
+  }
+
+  fn expression() {
+    parsePrecedence(PREC.ASSIGNMENT)
   }
 
   advance()
