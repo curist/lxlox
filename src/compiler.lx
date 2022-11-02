@@ -217,6 +217,23 @@ mod.compile = fn(src) {
     }
   }
 
+  fn literal() {
+    let operatorType = parser.previous.type
+
+    let opCodes = {
+      [TOKEN.FALSE]: OP.FALSE,
+      [TOKEN.NIL]: OP.NIL,
+      [TOKEN.TRUE]: OP.TRUE,
+    }
+    let opCode = opCodes[operatorType]
+    if opCode {
+      emitByte(opCode)
+    } else {
+      // unreable, supposely
+      error("bad literal op: " + types.TOKEN_NAME[operatorType])
+    }
+  }
+
   fn expression() {
     parsePrecedence(PREC.ASSIGNMENT)
   }
@@ -280,18 +297,18 @@ mod.compile = fn(src) {
     [TOKEN.AND]           : [nil,      nil,    PREC.NONE],
     [TOKEN.CLASS]         : [nil,      nil,    PREC.NONE],
     [TOKEN.ELSE]          : [nil,      nil,    PREC.NONE],
-    [TOKEN.FALSE]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.FALSE]         : [literal,  nil,    PREC.NONE],
     [TOKEN.FOR]           : [nil,      nil,    PREC.NONE],
     [TOKEN.FN]            : [nil,      nil,    PREC.NONE],
     [TOKEN.IF]            : [nil,      nil,    PREC.NONE],
-    [TOKEN.NIL]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.NIL]           : [literal,  nil,    PREC.NONE],
     [TOKEN.OR]            : [nil,      nil,    PREC.NONE],
     [TOKEN.PRINT]         : [nil,      nil,    PREC.NONE],
     [TOKEN.DEFER]         : [nil,      nil,    PREC.NONE],
     [TOKEN.IMPORT]        : [nil,      nil,    PREC.NONE],
     [TOKEN.RETURN]        : [nil,      nil,    PREC.NONE],
     [TOKEN.BREAK]         : [nil,      nil,    PREC.NONE],
-    [TOKEN.TRUE]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.TRUE]          : [literal,  nil,    PREC.NONE],
     [TOKEN.LET]           : [nil,      nil,    PREC.NONE],
     [TOKEN.FOR]           : [nil,      nil,    PREC.NONE],
     [TOKEN.ERROR]         : [nil,      nil,    PREC.NONE],
