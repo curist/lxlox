@@ -3,6 +3,7 @@ let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
 
 let TOKEN = types.TOKEN
+let OP = types.OP
 
 let mod = {}
 
@@ -42,17 +43,39 @@ mod.compile = fn(src) {
   // TODO: put line info as debug info, as part of the bin format
   let line = -1
 
-  let bytecode = []
-  let constants = []
+  let chunks = [{
+    bytecode: []
+    constants: []
+  }]
 
   let parser = {
     current: 0,
     previous: 0,
     hadError: false,
+    panicMode: false,
   }
 
-  fn push(code) {
-    bytecode = append(bytecode, lib.tohex(code))
+  fn currentChunk() {
+    // XXX: probably will need to change this later
+    // Right now, the chunk pointer is stored in a module-level variable,
+    // like we store other global state.
+    // Later, when we start compiling user-defined functions,
+    // the notion of “current chunk” gets more complicated.
+    // To avoid having to go back and change a lot of code,
+    // I encapsulate that logic in the currentChunk() function.
+    // ^ from book text
+    // https://craftinginterpreters.com/compiling-expressions.html#emitting-bytecode
+    chunks[len(chunks) - 1]
+  }
+
+  fn emitByte(byte) {
+    let chunk = currentChunk()
+    chunk.bytecode = append(chunk.bytecode, lib.tohex(byte))
+  }
+
+  fn emitBytes(byte1, byte2) {
+    emitByte(byte1)
+    emitByte(byte2)
   }
 
   fn pushConstant(constant) {
@@ -62,6 +85,10 @@ mod.compile = fn(src) {
   }
 
   fn errorAt(token, message) {
+    if parser.panicMode {
+      return
+    }
+    parser.panicMode = true
     pp([
       "[line ", token.line, "]",
       if token.type == TOKEN.EOF {
@@ -95,9 +122,26 @@ mod.compile = fn(src) {
     }
   }
 
+  fn consume(type, message) {
+    if parser.current.type == type {
+      advance()
+      return
+    }
+    errorAtCurrent(message)
+  }
+
+  fn emitReturn() {
+    emitByte(OP.RETURN)
+  }
+
+  fn endCompiler() {
+    emitReturn()
+  }
+
   advance()
-  expression()
+  // expression()
   consume(TOKEN.EOF, "Expect end of expression.")
+  endCompiler()
 
   return !parser.hadError
 }

@@ -94,4 +94,20 @@ types.KEYWORDS = {
   mapping
 }
 
+// XXX: need to keep this in sync with clox
+types.OP = {
+  let iota = lib.iota(0)
+  {
+    CONSTANT: iota(),
+    CONST_BYTE: iota(),
+    ADD: iota(),
+    SUBTRACT: iota(),
+    MULTIPLY: iota(),
+    DIVIDE: iota(),
+    MOD: iota(),
+    NEGATE: iota(),
+    RETURN: iota(),
+  }
+}
+
 types
