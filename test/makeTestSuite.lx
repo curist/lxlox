@@ -17,7 +17,7 @@ fn makeTestSuite() {
   fn defineTest(testName, testBody) {
     let testPassed = true
     let assert = {
-      equal: fn(expect, actual) {
+      equal: fn(actual, expect) {
         totalAssertions = totalAssertions + 1
         if expect == actual {
           passedAssertions = passedAssertions + 1

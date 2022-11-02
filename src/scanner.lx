@@ -33,12 +33,15 @@ fn initScanner(src) {
     line: state.line,
   }}
 
-  fn NumberToken(number) {{
-    type: TOKEN.NUMBER,
-    lexeme: getLexeme(),
-    literal: number,
-    line: state.line,
-  }}
+  fn NumberToken() {
+    let lexeme = getLexeme()
+    return {
+      type: TOKEN.NUMBER,
+      lexeme: lexeme,
+      literal: lib.parseFloat(lexeme),
+      line: state.line,
+    }
+  }
 
   fn errorToken(message) {{
     type: TOKEN.ERROR,
@@ -63,7 +66,10 @@ fn initScanner(src) {
     return true
   }
 
-  fn peek() { src[state.current] }
+  fn peek() {
+    if isAtEnd() { return "" }
+    src[state.current]
+  }
 
   fn peekNext() {
     if isAtEnd() { nil } else src[state.current + 1]
@@ -148,15 +154,14 @@ fn initScanner(src) {
   }
 
   fn number() {
-    let value = ""
-    for isDigit(peek()) { value = value + advance() }
+    for isDigit(peek()) { advance() }
     if peek() == "." and isDigit(peekNext()) {
       // consume the "."
-      value = value + advance()
+      advance()
 
-      for isDigit(peek()) { value = value + advance() }
+      for isDigit(peek()) { advance() }
     }
-    NumberToken(lib.parseFloat(value))
+    NumberToken()
   }
 
   fn identifier() {

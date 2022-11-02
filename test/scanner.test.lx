@@ -3,16 +3,42 @@ let suite = makeTestSuite()
 let test = suite.defineTest
 
 let initScanner = import "src/scanner.lx"
+let types = import "src/types.lx"
+let TOKEN = types.TOKEN
 
-test("some test", fn(assert) {
-  assert.equal(1, 3 - 2)
-  assert.equal(40, 42)
-  assert.equal(true, false)
-  assert.equal(1, 3 - 2)
+test("scanner - basic", fn(assert) {
+  let scanner = initScanner("let lib = import \"foo\"")
+  let token = scanner.scanToken()
+  assert.equal(str(keys(token)), "[type,lexeme,line]")
+  assert.equal(token.type, TOKEN.LET)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.IDENTIFIER)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.EQUAL)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.IMPORT)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.STRING)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.EOF)
 })
 
-test("good boy", fn(assert) {
-  assert.equal(true, true)
+test("scanner - values", fn(assert) {
+  let scanner = initScanner("123.456 \"ok\\tay\"")
+  let token
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.NUMBER)
+  assert.equal(token.literal, 123.456)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.STRING)
+  assert.equal(token.literal, "ok\tay")
 })
 
 suite.run()
