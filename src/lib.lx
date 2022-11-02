@@ -18,6 +18,13 @@ let lib = {
     let i = start - 1
     fn() { i = i + 1 }
   },
+  map: fn(arr, cb) {
+    let result = []
+    let length = len(arr)
+    for let i = 0; i < length; i = i + 1 {
+      result = append(result, cb(arr[i], i, arr))
+    }
+  },
   tohex: fn(num) {
     let map = {
       [10]: "a", [11]: "b", [12]: "c",

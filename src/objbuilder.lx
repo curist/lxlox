@@ -8,8 +8,22 @@ let VERSION = 0
 // OBJSIZE:   4 little endian
 // TBD:       32 - 10 = 22
 // CODE_SECTION: ?
+//      CONST_COUNT: 1
 //      SIZE: 4 little endian
+// CONST_SECTION: follow right after a CODE_SECTION (XXX: or should we do some padding?)
+//      SIZE: 4  let's left size here, so it's possible for us to jump to next chunk
+//   every const is like
+//      TYPE:  1
+//      VALUE: various length
+//      currently we only have TYPE 00, as double, and it takes 8 bytes
 // constants section should be defined at TBD: later
+
+let ValueType = {
+  let iota = lib.iota(0)
+  {
+    DOUBLE:    iota(),
+  }
+}
 
 fn int32ToBytes(num) {
   // always return 4 bytes
@@ -22,6 +36,12 @@ fn int32ToBytes(num) {
   num = lib.floor(num / 256)
   bytes[3] = lib.tohex(num % 256)
   return bytes
+}
+
+fn writeBytesAt(arr1, arr2, index) {
+  for let i = 0; i < len(arr2) and i + index < len(arr1); i = i + 1 {
+    arr1[index + i] = arr2[i]
+  }
 }
 
 fn concat(arr1, arr2) {
@@ -43,16 +63,44 @@ fn objbuilder(chunks) {
   }
   obj = concat(obj, header)
 
+  let hasConstants = len(chunk.constants) > 0
+  obj = append(obj, lib.tohex(if hasConstants { 1 } else 0))
+
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
   obj = concat(obj, chunk.bytecode)
 
+  if hasConstants {
+    // save start index, we will update this to actual constants size
+    let constSectionStart = len(obj)
+    // reserve constants section size
+    obj = concat(obj, int32ToBytes(0))
+
+    let constants = []
+    let constTypeHandlers = {
+      [ValueType.DOUBLE]: fn(value) {
+        let double = lib.map(Lx.doubleToUint8Array(value), fn(n) {
+          lib.tohex(n)
+        })
+        constants = concat(constants, double)
+      },
+    }
+    for let i = 0; i < len(chunk.constants); i = i + 1 {
+      let value = chunk.constants[i]
+      // TODO: check constants type
+      let handler = constTypeHandlers[ValueType.DOUBLE]
+      constants = append(constants, lib.tohex(ValueType.DOUBLE))
+      handler(value)
+    }
+    // update constants section size
+    writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)
+
+    obj = concat(obj, constants)
+  }
+
+  // update obj size
   let totalSize = len(obj)
-  let totalSizeInBytes = int32ToBytes(totalSize)
-  obj[6] = totalSizeInBytes[0]
-  obj[7] = totalSizeInBytes[1]
-  obj[8] = totalSizeInBytes[2]
-  obj[9] = totalSizeInBytes[3]
+  writeBytesAt(obj, int32ToBytes(totalSize), 6)
 
   return {
     obj: obj,
