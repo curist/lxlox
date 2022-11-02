@@ -138,6 +138,35 @@ mod.compile = fn(src) {
     emitReturn()
   }
 
+  fn addConstant(chunk, value) {
+    // TODO: support more value type
+    chunk.constants = append(chunk.constants, value)
+    return len(chunk.constants) - 1
+  }
+
+  fn makeConstant(value) {
+    // TODO: support more value type
+    let constant = addConstant(currentChunk(), value)
+    if constant > 256 {
+      error("Too many constants in one chunk.")
+      return 0
+    }
+    return constant
+  }
+
+  fn emitConstant(value) {
+    emitBytes(OP.CONSTANT, makeConstant(value))
+  }
+
+  fn number() {
+    let value = parser.previous.literal
+    if value >= 0 and value < 256 {
+      emitBytes(OP.CONST_BYTE, value)
+    } else {
+      emitConstant(value)
+    }
+  }
+
   fn expression() {
 
   }
