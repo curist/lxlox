@@ -78,10 +78,24 @@ mod.compile = fn(src) {
     emitByte(byte2)
   }
 
-  fn pushConstant(constant) {
-    // TODO: check the type of the constant
-    // and figure out how do we present it in `constants` array
-    // XXX: should we keep a seperated constants counter?
+  fn addConstant(chunk, value) {
+    // TODO: support more value type
+    chunk.constants = append(chunk.constants, value)
+    return len(chunk.constants) - 1
+  }
+
+  fn makeConstant(value) {
+    // TODO: support more value type
+    let constant = addConstant(currentChunk(), value)
+    if constant > 256 {
+      error("Too many constants in one chunk.")
+      return 0
+    }
+    return constant
+  }
+
+  fn emitConstant(value) {
+    emitBytes(OP.CONSTANT, makeConstant(value))
   }
 
   fn errorAt(token, message) {
@@ -138,25 +152,11 @@ mod.compile = fn(src) {
     emitReturn()
   }
 
-  fn addConstant(chunk, value) {
-    // TODO: support more value type
-    chunk.constants = append(chunk.constants, value)
-    return len(chunk.constants) - 1
+  fn grouping() {
+    expression()
+    consume(TOKEN.RIGHT_PAREN, "Expect ')' after expression.")
   }
 
-  fn makeConstant(value) {
-    // TODO: support more value type
-    let constant = addConstant(currentChunk(), value)
-    if constant > 256 {
-      error("Too many constants in one chunk.")
-      return 0
-    }
-    return constant
-  }
-
-  fn emitConstant(value) {
-    emitBytes(OP.CONSTANT, makeConstant(value))
-  }
 
   fn number() {
     let value = parser.previous.literal
