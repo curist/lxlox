@@ -4,5 +4,5 @@ run:
 	@lx.ts src/main.lx src/main.lx
 
 test:
-	@ls test/*.test.lx | xargs lx.ts
+	@ls test/*.test.lx | xargs -I{} sh -c "echo {} && lx.ts {}"
 
