@@ -312,7 +312,10 @@ mod.compile = fn(src) {
   consume(TOKEN.EOF, "Expect end of expression.")
   endCompiler()
 
-  return !parser.hadError
+  return {
+    success: !parser.hadError,
+    chunks: chunks,
+  }
 }
 
 mod

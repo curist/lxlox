@@ -1,5 +1,6 @@
 let lib = import "src/lib.lx"
 let compiler = import "src/compiler.lx"
+let objbuilder = import "src/objbuilder.lx"
 
 fn pp(arr) {
   if type(arr) == "array" {
@@ -17,7 +18,12 @@ fn main() {
   }
 
   let source = Lx.readTextFile(Lx.args[1])
-  compiler.compile(source)
+  let result = compiler.compile(source)
+  if result.success {
+    objbuilder(result.chunks).dump()
+  } else {
+    print("compile failed.")
+  }
 }
 
 main()

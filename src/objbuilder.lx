@@ -1,0 +1,85 @@
+let lib = import "src/lib.lx"
+
+let VERSION = 0
+
+// obj layout
+// LXOBJ:     5
+// VERSION:   1
+// OBJSIZE:   4 little endian
+// TBD:       32 - 10 = 22
+// CODE_SECTION: ?
+//      SIZE: 4 little endian
+// constants section should be defined at TBD: later
+
+fn int32ToBytes(num) {
+  // always return 4 bytes
+  let bytes = [0, 0, 0, 0]
+  bytes[0] = lib.tohex(num % 256)
+  num = lib.floor(num / 256)
+  bytes[1] = lib.tohex(num % 256)
+  num = lib.floor(num / 256)
+  bytes[2] = lib.tohex(num % 256)
+  num = lib.floor(num / 256)
+  bytes[3] = lib.tohex(num % 256)
+  return bytes
+}
+
+fn concat(arr1, arr2) {
+  // XXX: not too efficient
+  for let i = 0; i < len(arr2); i = i + 1 {
+    arr1 = append(arr1, arr2[i])
+  }
+}
+
+fn objbuilder(chunks) {
+  // XXX: handling only 1 chunk for now
+  let chunk = chunks[0]
+  let obj = []
+
+  let header = ["4c", "58", "4f", "42", "4a", lib.tohex(VERSION)]
+  let fillRest = 32 - len(header)
+  for let i = 0; i < fillRest; i = i + 1 {
+    header = append(header, "00")
+  }
+  obj = concat(obj, header)
+
+  let codeSize = len(chunk.bytecode)
+  obj = concat(obj, int32ToBytes(codeSize))
+  obj = concat(obj, chunk.bytecode)
+
+  let totalSize = len(obj)
+  let totalSizeInBytes = int32ToBytes(totalSize)
+  obj[6] = totalSizeInBytes[0]
+  obj[7] = totalSizeInBytes[1]
+  obj[8] = totalSizeInBytes[2]
+  obj[9] = totalSizeInBytes[3]
+
+  return {
+    obj: obj,
+    dump: fn() {
+      // print formatted obj in plain text
+      let buffered = ""
+      let totalSize = len(obj)
+      for let i = 0; i < totalSize; {
+        for let j = i; j < i + 16 and j < totalSize; j = j + 1 {
+          buffered = buffered + obj[j]
+          if j % 4 == 3 {
+            buffered = buffered + "    "
+          } else {
+            buffered = buffered + " "
+          }
+        }
+
+        i = i + 16
+
+        if len(buffered) > 100 {
+          print(buffered)
+          buffered = ""
+        } else {
+          buffered = buffered + "\n"
+        }
+      }
+      print(buffered)
+    },
+  }
+}
