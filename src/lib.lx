@@ -9,6 +9,11 @@ let lib = {
     //   or leave the implementation in an Array module
     return Lx.join(arr, sep)
   },
+  parseFloat: fn(s) {
+    // ^ not yet decide if we want a parseFloat() builtin
+    //   or leave the implementation in an Math module
+    Lx.parseFloat(s)
+  },
   iota: fn (start) {
     let i = start - 1
     fn() { i = i + 1 }

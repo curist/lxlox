@@ -26,6 +26,20 @@ fn initScanner(src) {
     line: state.line,
   }}
 
+  fn StringToken(string) {{
+    type: TOKEN.STRING,
+    lexeme: getLexeme(),
+    literal: string,
+    line: state.line,
+  }}
+
+  fn NumberToken(number) {{
+    type: TOKEN.NUMBER,
+    lexeme: getLexeme(),
+    literal: number,
+    line: state.line,
+  }}
+
   fn errorToken(message) {{
     type: TOKEN.ERROR,
     lexeme: message,
@@ -95,20 +109,36 @@ fn initScanner(src) {
     ["<"]: fn() { Token(if match("=") { TOKEN.LESS_EQUAL } else TOKEN.LESS) },
     [">"]: fn() { Token(if match("=") { TOKEN.GREATER_EQUAL } else TOKEN.GREATER) },
     ["\""]: fn() {
+      let string = ""
       for peek() != "\"" and !isAtEnd() {
-        if peek() == "\n" {
+        let c = peek()
+        if c == "\n" {
           state.line = state.line + 1
         }
+        if c != "\\" {
+          string = string + c
+        } else {
+          // handle escape sequences
+          let escapeSequences = {
+            n: "\n",
+            r: "\r",
+            t: "\t",
+            ["\""]: "\"",
+            ["\\"]: "\\",
+          }
+          advance()
+          c = peek()
+          string = string + (escapeSequences[c] or c)
+        }
+
         advance()
       }
-
-      // TODO: handle escape sequence
 
       if isAtEnd() { return errorToken("Unterminated string.") }
 
       // closing quote.
       advance()
-      Token(TOKEN.STRING)
+      StringToken(string)
     },
   }
 
@@ -118,14 +148,15 @@ fn initScanner(src) {
   }
 
   fn number() {
-    for isDigit(peek()) { advance() }
+    let value = ""
+    for isDigit(peek()) { value = value + advance() }
     if peek() == "." and isDigit(peekNext()) {
       // consume the "."
-      advance()
+      value = value + advance()
 
-      for isDigit(peek()) { advance() }
+      for isDigit(peek()) { value = value + advance() }
     }
-    Token(TOKEN.NUMBER)
+    NumberToken(lib.parseFloat(value))
   }
 
   fn identifier() {
