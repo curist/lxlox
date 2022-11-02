@@ -259,6 +259,7 @@ mod.compile = fn(src) {
     parsePrecedence(PREC.UNARY)
 
     let opCodes = {
+      [TOKEN.BANG]: OP.NOT,
       [TOKEN.MINUS]: OP.NEGATE,
     }
     let opCode = opCodes[opType]
@@ -283,7 +284,7 @@ mod.compile = fn(src) {
     [TOKEN.SLASH]         : [nil,      binary, PREC.FACTOR],
     [TOKEN.STAR]          : [nil,      binary, PREC.FACTOR],
     [TOKEN.MOD]           : [nil,      binary, PREC.FACTOR],
-    [TOKEN.BANG]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.BANG]          : [unary,    nil,    PREC.NONE],
     [TOKEN.BANG_EQUAL]    : [nil,      nil,    PREC.NONE],
     [TOKEN.EQUAL]         : [nil,      nil,    PREC.NONE],
     [TOKEN.EQUAL_EQUAL]   : [nil,      nil,    PREC.NONE],

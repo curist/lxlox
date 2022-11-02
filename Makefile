@@ -8,3 +8,4 @@ test:
 
 dump:
 	lx.ts src/main.lx test/stub/ch17.lx | xxd -r -p > /tmp/ch17.lxobj
+	lx.ts src/main.lx test/stub/ch18.lx | xxd -r -p > /tmp/ch18.lxobj

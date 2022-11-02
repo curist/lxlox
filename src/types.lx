@@ -107,6 +107,7 @@ types.OP = {
     SUBTRACT: iota(),
     MULTIPLY: iota(),
     DIVIDE: iota(),
+    NOT: iota(),
     MOD: iota(),
     NEGATE: iota(),
     RETURN: iota(),
