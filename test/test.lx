@@ -1,0 +1,17 @@
+let makeTestSuite = import "test/makeTestSuite.lx"
+
+let suite = makeTestSuite()
+let test = suite.defineTest
+
+test("some test", fn(assert) {
+  assert.equal(1, 3 - 2)
+  assert.equal(40, 42)
+  assert.equal(true, false)
+  assert.equal(1, 3 - 2)
+})
+
+test("good boy", fn(assert) {
+  assert.equal(true, true)
+})
+
+suite.run()
