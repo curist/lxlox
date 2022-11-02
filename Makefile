@@ -4,5 +4,5 @@ run:
 	@lx.ts src/main.lx src/main.lx
 
 test:
-	@lx.ts test/test.lx
+	@ls test/*.test.lx | xargs lx.ts
 

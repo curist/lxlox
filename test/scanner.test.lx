@@ -1,7 +1,8 @@
 let makeTestSuite = import "test/makeTestSuite.lx"
-
 let suite = makeTestSuite()
 let test = suite.defineTest
+
+let initScanner = import "src/scanner.lx"
 
 test("some test", fn(assert) {
   assert.equal(1, 3 - 2)
