@@ -138,8 +138,12 @@ mod.compile = fn(src) {
     emitReturn()
   }
 
+  fn expression() {
+
+  }
+
   advance()
-  // expression()
+  expression()
   consume(TOKEN.EOF, "Expect end of expression.")
   endCompiler()
 
