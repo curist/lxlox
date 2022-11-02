@@ -1,0 +1,62 @@
+let types = import "src/types.lx"
+let initScanner = import "src/scanner.lx"
+
+let mod = {}
+
+mod.debugPrint = fn(src) {
+  let scanner = initScanner(src)
+
+  let line = -1
+
+  for true {
+    let token = scanner.scanToken()
+
+    let lineInfo = if token.line != line {
+      lib.padStart(token.line, 4, " ")
+      //^ XXX: ah... that's from parent global scope :o
+      // not sure if this is a behavior we want...
+    } else {
+      "   | "
+    }
+    pp([
+      lineInfo,
+      " ", token.type, " ",
+      lib.padRight(token.lexeme, 30, " "),
+      "\t| ",
+      types.TOKEN_NAME[token.type],
+    ])
+
+    if token.type == types.TOKEN.EOF {
+      break
+    }
+  }
+}
+
+mod.compile = fn(src) {
+  let scanner = initScanner(src)
+
+  let line = -1
+
+  for true {
+    let token = scanner.scanToken()
+
+    let lineInfo = if token.line != line {
+      lib.padStart(token.line, 4, " ")
+    } else {
+      "   | "
+    }
+    pp([
+      lineInfo,
+      " ", token.type, " ",
+      lib.padRight(token.lexeme, 30, " "),
+      "\t| ",
+      types.TOKEN_NAME[token.type],
+    ])
+
+    if token.type == types.TOKEN.EOF {
+      break
+    }
+  }
+}
+
+mod

@@ -1,6 +1,5 @@
 let lib = import "src/lib.lx"
-let types = import "src/types.lx"
-let initScanner = import "src/scanner.lx"
+let compiler = import "src/compiler.lx"
 
 fn pp(arr) {
   if type(arr) == "array" {
@@ -18,31 +17,7 @@ fn main() {
   }
 
   let source = Lx.readTextFile(Lx.args[1])
-  let scanner = initScanner(source)
-
-  let line = -1
-
-  for true {
-    let token = scanner.scanToken()
-
-    let lineInfo = if token.line != line {
-      lib.padStart(token.line, 4, " ")
-    } else {
-      "   | "
-    }
-    pp([
-      lineInfo,
-      " ", token.type, " ",
-      lib.padRight(token.lexeme, 30, " "),
-      "\t| ",
-      types.TOKEN_NAME[token.type],
-    ])
-
-    if token.type == types.TOKEN.EOF {
-      break
-    }
-  }
-
+  compiler.compile(source)
 }
 
 main()
