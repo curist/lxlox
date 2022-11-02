@@ -217,6 +217,10 @@ mod.compile = fn(src) {
     }
   }
 
+  fn expression() {
+    parsePrecedence(PREC.ASSIGNMENT)
+  }
+
   fn grouping() {
     expression()
     consume(TOKEN.RIGHT_PAREN, "Expect ')' after expression.")
@@ -301,10 +305,6 @@ mod.compile = fn(src) {
       infix: rule[1],
       precedence: rule[2],
     }
-  }
-
-  fn expression() {
-    parsePrecedence(PREC.ASSIGNMENT)
   }
 
   advance()

@@ -11,7 +11,6 @@ fn pp(arr) {
 }
 
 fn main() {
-  // TODO: use `xxd -r -p` in the future to pack bytecodes into bin file
   if len(Lx.args) != 2 {
     pp(["Usage: lxlox <path>"])
     Lx.exit(64)
@@ -19,11 +18,11 @@ fn main() {
 
   let source = Lx.readTextFile(Lx.args[1])
   let result = compiler.compile(source)
-  if result.success {
-    objbuilder(result.chunks).dump()
-  } else {
+  if !result.success {
     print("compile failed.")
+    Lx.exit(65)
   }
+  objbuilder(result.chunks).dump()
 }
 
 main()
