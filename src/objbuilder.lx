@@ -63,14 +63,14 @@ fn objbuilder(chunks) {
   }
   obj = concat(obj, header)
 
-  let hasConstants = len(chunk.constants) > 0
-  obj = append(obj, lib.tohex(if hasConstants { 1 } else 0))
+  let constantsSize = len(chunk.constants)
+  obj = append(obj, lib.tohex(constantsSize))
 
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
   obj = concat(obj, chunk.bytecode)
 
-  if hasConstants {
+  if constantsSize > 0 {
     // save start index, we will update this to actual constants size
     let constSectionStart = len(obj)
     // reserve constants section size
