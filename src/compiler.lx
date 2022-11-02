@@ -62,6 +62,10 @@ mod.compile = fn(src) {
   // TODO: put line info as debug info, as part of the bin format
   let line = -1
 
+  // to get around mutual references
+  let parseRules
+  let getRule
+
   let chunks = [{
     bytecode: []
     constants: []
@@ -167,8 +171,50 @@ mod.compile = fn(src) {
     emitByte(OP.RETURN)
   }
 
+  fn parsePrecedence(precedence) {
+    advance()
+    let prefixRule = getRule(parser.previous.type).prefix
+    if !prefixRule {
+      error("Expect expression.")
+      return
+    }
+    prefixRule()
+
+    for precedence <= getRule(parser.current.type).precedence {
+      advance()
+      let infixRule = getRule(parser.previous.type).infix
+      // XXX: should we really error out here?
+      if !infixRule {
+        error("Expect expression.")
+        return
+      }
+      infixRule()
+    }
+  }
+
   fn endCompiler() {
     emitReturn()
+  }
+
+  fn binary() {
+    let operatorType = parser.previous.type
+    let rule = getRule(operatorType)
+    parsePrecedence(rule.precedence + 1)
+
+    let opCodes = {
+      [TOKEN.PLUS]: OP.ADD,
+      [TOKEN.MINUS]: OP.SUBTRACT,
+      [TOKEN.STAR]: OP.MULTIPLY,
+      [TOKEN.SLASH]: OP.DIVIDE,
+      [TOKEN.MOD]: OP.MOD,
+    }
+    let opCode = opCodes[operatorType]
+    if opCode {
+      emitByte(opCode)
+    } else {
+      // unreable, supposely
+      error("bad binary op: " + types.TOKEN_NAME[operatorType])
+    }
   }
 
   fn grouping() {
@@ -198,13 +244,63 @@ mod.compile = fn(src) {
     if opCode {
       emitByte(opCode)
     } else {
-      // unreaable, supposely
+      // unreable, supposely
       error("bad unary op: " + types.TOKEN_NAME[opType])
     }
   }
 
-  fn parsePrecedence(prec) {
+  parseRules = {
+    [TOKEN.LEFT_PAREN]    : [grouping, nil,    PREC.NONE],
+    [TOKEN.RIGHT_PAREN]   : [nil,      nil,    PREC.NONE],
+    [TOKEN.LEFT_BRACE]    : [nil,      nil,    PREC.NONE], 
+    [TOKEN.RIGHT_BRACE]   : [nil,      nil,    PREC.NONE],
+    [TOKEN.COMMA]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.DOT]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.MINUS]         : [unary,    binary, PREC.TERM],
+    [TOKEN.PLUS]          : [nil,      binary, PREC.TERM],
+    [TOKEN.SEMICOLON]     : [nil,      nil,    PREC.NONE],
+    [TOKEN.SLASH]         : [nil,      binary, PREC.FACTOR],
+    [TOKEN.STAR]          : [nil,      binary, PREC.FACTOR],
+    [TOKEN.MOD]           : [nil,      binary, PREC.FACTOR],
+    [TOKEN.BANG]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.BANG_EQUAL]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.EQUAL]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.EQUAL_EQUAL]   : [nil,      nil,    PREC.NONE],
+    [TOKEN.GREATER]       : [nil,      nil,    PREC.NONE],
+    [TOKEN.GREATER_EQUAL] : [nil,      nil,    PREC.NONE],
+    [TOKEN.LESS]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.LESS_EQUAL]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.IDENTIFIER]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.STRING]        : [nil,      nil,    PREC.NONE],
+    [TOKEN.NUMBER]        : [number    nil,    PREC.NONE],
+    [TOKEN.AND]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.CLASS]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.ELSE]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.FALSE]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.FOR]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.FN]            : [nil,      nil,    PREC.NONE],
+    [TOKEN.IF]            : [nil,      nil,    PREC.NONE],
+    [TOKEN.NIL]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.OR]            : [nil,      nil,    PREC.NONE],
+    [TOKEN.PRINT]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.DEFER]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.IMPORT]        : [nil,      nil,    PREC.NONE],
+    [TOKEN.RETURN]        : [nil,      nil,    PREC.NONE],
+    [TOKEN.BREAK]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.TRUE]          : [nil,      nil,    PREC.NONE],
+    [TOKEN.LET]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.FOR]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.ERROR]         : [nil,      nil,    PREC.NONE],
+    [TOKEN.EOF]           : [nil,      nil,    PREC.NONE],
+  }
 
+  getRule = fn(type) {
+    let rule = parseRules[type]
+    return {
+      prefix: rule[0],
+      infix: rule[1],
+      precedence: rule[2],
+    }
   }
 
   fn expression() {
