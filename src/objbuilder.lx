@@ -5,8 +5,9 @@ let VERSION = 0
 // obj layout
 // LX:        2
 // VERSION:   1
+// FLAGS:     1 , 8 bits, TBD, could indicate if this is a debug release or not?
 // OBJSIZE:   4 little endian
-// TBD:       16 - (2+1+4) = 9
+// TBD:       16 - (2+1+1+4) = 8
 // CODE_SECTION: ?
 //      CONST_COUNT: 1
 //      SIZE: 4 little endian
@@ -58,7 +59,7 @@ fn objbuilder(chunks) {
   let chunk = chunks[0]
   let obj = []
 
-  let header = ["4c", "58", lib.tohex(VERSION)]
+  let header = ["4c", "58", lib.tohex(VERSION), "00"]
   let fillRest = 16 - len(header)
   for let i = 0; i < fillRest; i = i + 1 {
     header = append(header, "00")
@@ -102,7 +103,7 @@ fn objbuilder(chunks) {
 
   // update obj size
   let totalSize = len(obj)
-  writeBytesAt(obj, int32ToBytes(totalSize), 3)
+  writeBytesAt(obj, int32ToBytes(totalSize), 4)
 
   return {
     obj: obj,
