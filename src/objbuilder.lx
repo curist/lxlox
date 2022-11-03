@@ -12,10 +12,12 @@ let ValueType = types.ValueType
 // OBJSIZE:   4 little endian
 // TBD:       16 - (2+1+1+4) = 8
 // CODE_SECTION: ?
-//      CONST_COUNT: 1
 //      SIZE: 4 little endian
+//      CODE: various length
+//            CODE_SECTION guaranteed to be followed by 5 bytes of CONST_SECTION header
 // CONST_SECTION: follow right after a CODE_SECTION
-//      SIZE: 4  let's left size here, so it's possible for us to jump to next chunk
+//      CONST_COUNT: 1
+//      SIZE: 4  let's leave size here, so it's possible for us to jump to next chunk
 //   every const is like
 //      TYPE:  1
 //      VALUE: various length
@@ -64,14 +66,17 @@ fn objbuilder(chunks) {
   }
   obj = concat(obj, header)
 
-  let constantsSize = len(chunk.constants)
-  obj = append(obj, lib.tohex(constantsSize))
-
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
   obj = concat(obj, chunk.bytecode)
 
-  if constantsSize > 0 {
+  let constantsSize = len(chunk.constants)
+  obj = append(obj, lib.tohex(constantsSize))
+
+  if constantsSize == 0 {
+    obj = concat(obj, int32ToBytes(0))
+
+  } else {
     // save start index, we will update this to actual constants size
     let constSectionStart = len(obj)
     // reserve constants section size

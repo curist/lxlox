@@ -1,0 +1,23 @@
+let makeTestSuite = import "test/makeTestSuite.lx"
+let suite = makeTestSuite()
+let test = suite.defineTest
+
+fn concat(arr1, arr2) {
+  // XXX: not too efficient
+  for let i = 0; i < len(arr2); i = i + 1 {
+    arr1 = append(arr1, arr2[i])
+  }
+}
+
+test("concat", fn(assert) {
+  let arr1 = [1]
+  let arr2 = [2]
+  assert.equal(len(arr1), 1)
+  // concat shouldn't affect original arr
+  concat(arr1, arr2)
+  assert.equal(len(arr1), 1)
+  arr1 = concat(arr1, arr2)
+  assert.equal(len(arr1), 2)
+})
+
+suite.run()
