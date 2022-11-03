@@ -1,4 +1,4 @@
-let lib = import "src/lib.lx"
+let lib = require("src/lib.lx")
 
 let types = {}
 

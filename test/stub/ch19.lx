@@ -1,3 +1,3 @@
-// lx.ts src/main.lx test/stub/ch18.lx
-"a string"
+// lx.ts src/main.lx test/stub/ch19.lx
+"a st" + "ring真的嗎" + "!!"
 

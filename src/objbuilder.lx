@@ -1,6 +1,6 @@
-let lib = import "src/lib.lx"
-let types = import "src/types.lx"
-let object = import "src/object.lx"
+let lib = require("src/lib.lx")
+let types = require("src/types.lx")
+let object = require("src/object.lx")
 
 let VERSION = 0
 

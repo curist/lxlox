@@ -63,6 +63,13 @@ let lib = {
     }
     arr1
   },
+  pp: fn pp(x) {
+    if type(x) == "array" {
+      print(lib.join(x, ""))
+    } else {
+      print(x)
+    }
+  },
   prettyprint: fn(x) {
     fn present(x) {
       if type(x) == "array" {
