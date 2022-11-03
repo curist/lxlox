@@ -18,8 +18,8 @@ let ObjType = object.ObjType
 //      CODE: various length
 //            CODE_SECTION guaranteed to be followed by 5 bytes of CONST_SECTION header
 // CONST_SECTION: follow right after a CODE_SECTION
-//      CONST_COUNT: 1
 //      SIZE: 4  let's leave size here, so it's possible for us to jump to next chunk
+//      CONST_COUNT: 1
 //   every const is like
 //      TYPE:  1
 //      VALUE: various length
@@ -58,6 +58,14 @@ fn writeBytesAt(arr1, arr2, index) {
   }
 }
 
+fn setFlags(options) {
+  let flags = 0
+  if options.debug {
+    flags = flags + 1
+  }
+  return lib.tohex(flags)
+}
+
 let concat = lib.concat
 
 fn objbuilder(chunks, debug) {
@@ -65,7 +73,11 @@ fn objbuilder(chunks, debug) {
   let chunk = chunks[0]
   let obj = []
 
-  let header = ["4c", "58", lib.tohex(VERSION), "00"]
+  let flags = setFlags({
+    debug: debug,
+  })
+
+  let header = ["4c", "58", lib.tohex(VERSION), flags]
   let fillRest = 16 - len(header)
   for let i = 0; i < fillRest; i = i + 1 {
     header = append(header, "00")
@@ -76,18 +88,15 @@ fn objbuilder(chunks, debug) {
   obj = concat(obj, int32ToBytes(codeSize))
   obj = concat(obj, chunk.bytecode)
 
+  // save start index, we will update this to actual constants size
+  let constSectionStart = len(obj)
+  // reserve constants section size
+  obj = concat(obj, int32ToBytes(0))
+
   let constantsSize = len(chunk.constants)
   obj = append(obj, lib.tohex(constantsSize))
 
-  if constantsSize == 0 {
-    obj = concat(obj, int32ToBytes(0))
-
-  } else {
-    // save start index, we will update this to actual constants size
-    let constSectionStart = len(obj)
-    // reserve constants section size
-    obj = concat(obj, int32ToBytes(0))
-
+  if constantsSize > 0 {
     let constants = []
     let objTypeHandlers = {
       [ObjType.STRING]: fn(value) {
