@@ -1,3 +1,4 @@
 // lx.ts src/main.lx test/stub/ch19.lx
-"a st" + "ring" + "!!"
+"a st" + "ring" + "!!" +
+"str" + "str" + "str" + "str"
 

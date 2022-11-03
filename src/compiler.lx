@@ -6,6 +6,7 @@ let object = require("src/object.lx")
 let TOKEN = types.TOKEN
 let OP = types.OP
 let ValueType = types.ValueType
+let ObjType = object.ObjType
 
 let mod = {}
 
@@ -119,10 +120,36 @@ mod.compile = fn(src, filename) {
     emitByte(byte2, line)
   }
 
+  let constantsCache = {}
+
+  fn calcValueKey(value) {
+    let k = str(value.kind) + ":"
+    if value.kind == ValueType.NUMBER {
+      k = k + str(value.value)
+    } else if value.kind == ValueType.OBJ {
+      let obj = value.value
+      k = k + str(obj.kind) + ":"
+      if obj.kind == ObjType.STRING {
+        k = k + obj.value
+      } else {
+        error("Invalid object type: " + str(obj.kind))
+      }
+
+    } else {
+      // currently only BOOL & NIL is in the category
+      // and...they won't be stored in constants
+    }
+    return k
+  }
+
   fn addConstant(chunk, value) {
-    // TODO: support more value type
+    let k = calcValueKey(value)
+    let index = constantsCache[k]
+    if index { return index }
     chunk.constants = append(chunk.constants, value)
-    return len(chunk.constants) - 1
+    index = len(chunk.constants) - 1
+    constantsCache[k] = index
+    return index
   }
 
   fn makeConstant(value) {
