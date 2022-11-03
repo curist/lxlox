@@ -1,0 +1,31 @@
+let lib = import "src/lib.lx"
+let types = import "src/types.lx"
+let ValueType = types.ValueType
+
+let mod = {}
+
+mod.Object = fn(kind, value) {{
+  kind: kind,
+  value: value,
+}}
+
+mod.ObjectString = fn(string) {
+  mod.Object(mod.ObjType.STRING, string)
+}
+
+mod.ObjType = {
+  let iota = lib.iota(0)
+  {
+    STRING: iota(),
+  }
+}
+
+mod.isString = fn(value) {
+  mod.isObjType(value, mod.ObjType.STRING)
+}
+
+mod.isObjType = fn(value, kind) {
+  valud.kind == ValueType.OBJ and value.value.kind == kind
+}
+
+mod

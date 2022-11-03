@@ -1,7 +1,8 @@
 .PHONY: run test
 
 run:
-	@lx.ts src/main.lx src/main.lx
+	# can't parse src/main.lx yet :)
+	@lx.ts src/main.lx test/stub/ch17.lx
 
 test:
 	@ls test/*.test.lx | xargs -I{} sh -c "echo {} && lx.ts {}"
@@ -9,3 +10,4 @@ test:
 dump:
 	lx.ts src/main.lx test/stub/ch17.lx | xxd -r -p > /tmp/ch17.lxobj
 	lx.ts src/main.lx test/stub/ch18.lx | xxd -r -p > /tmp/ch18.lxobj
+	lx.ts src/main.lx test/stub/ch19.lx | xxd -r -p > /tmp/ch19.lxobj

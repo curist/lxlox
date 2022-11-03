@@ -24,6 +24,7 @@ let lib = {
     for let i = 0; i < length; i = i + 1 {
       result = append(result, cb(arr[i], i, arr))
     }
+    result
   },
   tohex: fn(num) {
     let map = {
@@ -55,7 +56,13 @@ let lib = {
       s = s + c
     }
   },
-
+  ord: fn(c) { Lx.ord(c) },
+  concat: fn concat(arr1, arr2) {
+    for let i = 0; i < len(arr2); i = i + 1 {
+      arr1 = append(arr1, arr2[i])
+    }
+    arr1
+  },
   prettyprint: fn(x) {
     fn present(x) {
       if type(x) == "array" {

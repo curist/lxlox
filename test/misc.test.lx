@@ -4,14 +4,8 @@ let test = suite.defineTest
 
 let lib = import "src/lib.lx"
 
-fn concat(arr1, arr2) {
-  // XXX: not too efficient
-  for let i = 0; i < len(arr2); i = i + 1 {
-    arr1 = append(arr1, arr2[i])
-  }
-}
-
 test("concat", fn(assert) {
+  let concat = lib.concat
   let arr1 = [1]
   let arr2 = [2]
   assert.equal(len(arr1), 1)
@@ -20,12 +14,19 @@ test("concat", fn(assert) {
   assert.equal(len(arr1), 1)
   arr1 = concat(arr1, arr2)
   assert.equal(len(arr1), 2)
+
+  arr2 = []
+  arr1 = concat(arr1, arr2)
+  assert.equal(len(arr1), 2)
 })
 
 test("pretty print", fn(assert) {
   let x = { a: 1, b: {"b"}, c: [1, 2] }
   let r = lib.prettyprint(x)
   assert.equal(r, "{a: 1, b: \"b\", c: [1,2]}")
+
+  r = lib.prettyprint([])
+  assert.equal(r, "[]")
 })
 
 suite.run()

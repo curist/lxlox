@@ -1,9 +1,11 @@
 let lib = import "src/lib.lx"
 let types = import "src/types.lx"
+let object = import "src/object.lx"
 
 let VERSION = 0
 
 let ValueType = types.ValueType
+let ObjType = object.ObjType
 
 // obj layout
 // LX:        2
@@ -41,18 +43,22 @@ fn doubleToBytes(num) {
   })
 }
 
+fn stringToBytes(s) {
+  let bytes = []
+  for let i = 0; i < len(s); i = i + 1 {
+    let c = s[i]
+    bytes = append(bytes, lib.tohex(lib.ord(c)))
+  }
+  bytes
+}
+
 fn writeBytesAt(arr1, arr2, index) {
   for let i = 0; i < len(arr2) and i + index < len(arr1); i = i + 1 {
     arr1[index + i] = arr2[i]
   }
 }
 
-fn concat(arr1, arr2) {
-  // XXX: not too efficient
-  for let i = 0; i < len(arr2); i = i + 1 {
-    arr1 = append(arr1, arr2[i])
-  }
-}
+let concat = lib.concat
 
 fn objbuilder(chunks) {
   // XXX: handling only 1 chunk for now
@@ -83,19 +89,36 @@ fn objbuilder(chunks) {
     obj = concat(obj, int32ToBytes(0))
 
     let constants = []
+    let objTypeHandlers = {
+      [ObjType.STRING]: fn(value) {
+        constants = concat(constants, int32ToBytes(len(value)))
+        constants = concat(constants, stringToBytes(value))
+      },
+    }
     let constTypeHandlers = {
       // NOTE: not having nil or bool handlers here,
       // since those are represented directly as byte codes
       [ValueType.NUMBER]: fn(value) {
         let double = doubleToBytes(value)
-        constants = append(constants, lib.tohex(ValueType.NUMBER))
         constants = concat(constants, double)
+      },
+      [ValueType.OBJ]: fn(val) {
+        let handler = objTypeHandlers[val.kind]
+        if handler {
+          constants = append(constants, lib.tohex(val.kind))
+          handler(val.value)
+        } else {
+          // should be unreachable
+          print("Invalid obj handler type: " + str(value.kind))
+          Lx.exit(55)
+        }
       },
     }
     for let i = 0; i < len(chunk.constants); i = i + 1 {
       let val = chunk.constants[i]
       let handler = constTypeHandlers[val.kind]
       if handler {
+        constants = append(constants, lib.tohex(val.kind))
         handler(val.value)
       } else {
         // should be unreachable
@@ -103,6 +126,7 @@ fn objbuilder(chunks) {
         Lx.exit(55)
       }
     }
+
     // update constants section size
     writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)
 

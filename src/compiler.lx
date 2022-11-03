@@ -1,6 +1,7 @@
 let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
+let object = import "src/object.lx"
 
 let TOKEN = types.TOKEN
 let OP = types.OP
@@ -36,6 +37,9 @@ fn BOOL_VAL(value)   { Value(ValueType.BOOL, value) }
 fn NIL_VAL(value)    { Value(ValueType.NIL, nil) }
 // XXX: ^ not sure if we need these two
 fn NUMBER_VAL(value) { Value(ValueType.NUMBER, value) }
+fn OBJ_VAL(value)    { Value(ValueType.OBJ, value) }
+
+fn ObjectString(string) { OBJ_VAL(object.ObjectString(string)) }
 
 mod.debugPrint = fn(src) {
   let scanner = initScanner(src)
@@ -274,7 +278,7 @@ mod.compile = fn(src) {
   }
 
   fn string() {
-    // TODO:
+    emitConstant(ObjectString(parser.previous.literal))
   }
 
   fn unary() {

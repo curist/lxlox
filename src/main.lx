@@ -2,11 +2,11 @@ let lib = import "src/lib.lx"
 let compiler = import "src/compiler.lx"
 let objbuilder = import "src/objbuilder.lx"
 
-fn pp(arr) {
-  if type(arr) == "array" {
-    print(lib.join(arr, ""))
+fn pp(x) {
+  if type(x) == "array" {
+    print(lib.join(x, ""))
   } else {
-    print(arr)
+    print(x)
   }
 }
 
