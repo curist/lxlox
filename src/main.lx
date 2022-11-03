@@ -5,18 +5,27 @@ let objbuilder = require("src/objbuilder.lx")
 let pp = lib.pp
 
 fn main() {
-  if len(Lx.args) != 2 {
-    pp(["Usage: lxlox <path>"])
+  // TODO: proper args parsing
+  let argsLength = len(Lx.args)
+  let DEBUG_BUILD = false
+  let path
+  if argsLength == 2 and Lx.args[1] != "--debug" {
+    path = Lx.args[1]
+  } else if argsLength == 3 {
+    DEBUG_BUILD = Lx.args[1] == "--debug"
+    path = Lx.args[2]
+  } else {
+    pp(["Usage: lxlox [--debug] <path>"])
     Lx.exit(64)
   }
 
-  let source = Lx.readTextFile(Lx.args[1])
+  let source = Lx.readTextFile(path)
   let result = compiler.compile(source)
   if !result.success {
     print("compile failed.")
     Lx.exit(65)
   }
-  objbuilder(result.chunks).dump()
+  objbuilder(result.chunks, DEBUG_BUILD).dump()
 }
 
 main()

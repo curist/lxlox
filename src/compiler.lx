@@ -53,8 +53,6 @@ mod.debugPrint = fn(src) {
 
     let lineInfo = if token.line != line {
       lib.padStart(token.line, 4, " ")
-      //^ XXX: ah... that's from parent global scope :o
-      // not sure if this is a behavior we want...
     } else {
       "   | "
     }

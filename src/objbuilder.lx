@@ -60,7 +60,7 @@ fn writeBytesAt(arr1, arr2, index) {
 
 let concat = lib.concat
 
-fn objbuilder(chunks) {
+fn objbuilder(chunks, debug) {
   // XXX: handling only 1 chunk for now
   let chunk = chunks[0]
   let obj = []
