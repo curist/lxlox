@@ -336,7 +336,6 @@ mod.compile = fn(src) {
     [TOKEN.OR]            : [nil,      nil,    PREC.NONE],
     [TOKEN.PRINT]         : [nil,      nil,    PREC.NONE],
     [TOKEN.DEFER]         : [nil,      nil,    PREC.NONE],
-    [TOKEN.IMPORT]        : [nil,      nil,    PREC.NONE],
     [TOKEN.RETURN]        : [nil,      nil,    PREC.NONE],
     [TOKEN.BREAK]         : [nil,      nil,    PREC.NONE],
     [TOKEN.TRUE]          : [literal,  nil,    PREC.NONE],

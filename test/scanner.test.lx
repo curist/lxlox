@@ -7,7 +7,7 @@ let types = require("src/types.lx")
 let TOKEN = types.TOKEN
 
 test("scanner - basic", fn(assert) {
-  let scanner = initScanner("let lib = import \"foo\"")
+  let scanner = initScanner("let lib = require(\"foo\")")
   let token = scanner.scanToken()
   assert.equal(str(keys(token)), "[type,lexeme,line]")
   assert.equal(token.type, TOKEN.LET)
@@ -19,10 +19,16 @@ test("scanner - basic", fn(assert) {
   assert.equal(token.type, TOKEN.EQUAL)
 
   token = scanner.scanToken()
-  assert.equal(token.type, TOKEN.IMPORT)
+  assert.equal(token.type, TOKEN.IDENTIFIER)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.LEFT_PAREN)
 
   token = scanner.scanToken()
   assert.equal(token.type, TOKEN.STRING)
+
+  token = scanner.scanToken()
+  assert.equal(token.type, TOKEN.RIGHT_PAREN)
 
   token = scanner.scanToken()
   assert.equal(token.type, TOKEN.EOF)

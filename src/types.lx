@@ -72,7 +72,6 @@ types.TOKEN = {
     LET: iota(),
     BREAK: iota(),
     DEFER: iota(),
-    IMPORT: iota(),
 
     // Termination
     ERROR: 990,

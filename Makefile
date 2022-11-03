@@ -2,7 +2,7 @@
 
 run:
 	# can't parse src/main.lx yet :)
-	@lx.ts src/main.lx test/stub/ch17.lx
+	@lx.ts src/main.lx test/stub/ch19.lx
 
 test:
 	@ls test/*.test.lx | xargs -I{} sh -c "echo {} && lx.ts {}"
