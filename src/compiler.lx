@@ -108,15 +108,15 @@ mod.compile = fn(src, filename) {
     chunks[len(chunks) - 1]
   }
 
-  fn emitByte(byte) {
+  fn emitByte(byte, line) {
     let chunk = currentChunk()
     chunk.bytecode = append(chunk.bytecode, lib.tohex(byte))
-    chunk.lines = append(chunk.lines, parser.previous.line)
+    chunk.lines = append(chunk.lines, line)
   }
 
-  fn emitBytes(byte1, byte2) {
-    emitByte(byte1)
-    emitByte(byte2)
+  fn emitBytes(byte1, byte2, line) {
+    emitByte(byte1, line)
+    emitByte(byte2, line)
   }
 
   fn addConstant(chunk, value) {
@@ -135,8 +135,8 @@ mod.compile = fn(src, filename) {
     return constant
   }
 
-  fn emitConstant(value) {
-    emitBytes(OP.CONSTANT, makeConstant(value))
+  fn emitConstant(value, line) {
+    emitBytes(OP.CONSTANT, makeConstant(value), line)
   }
 
   fn errorAt(token, message) {
@@ -186,7 +186,7 @@ mod.compile = fn(src, filename) {
   }
 
   fn emitReturn() {
-    emitByte(OP.RETURN)
+    emitByte(OP.RETURN, parser.previous.line)
   }
 
   fn parsePrecedence(precedence) {
@@ -216,6 +216,7 @@ mod.compile = fn(src, filename) {
 
   fn binary() {
     let operatorType = parser.previous.type
+    let line = parser.previous.line
     let rule = getRule(operatorType)
     parsePrecedence(rule.precedence + 1)
 
@@ -235,9 +236,9 @@ mod.compile = fn(src, filename) {
     let codes = opCodes[operatorType]
     if codes {
       if type(codes) == "array" {
-        emitBytes(codes[0], codes[1])
+        emitBytes(codes[0], codes[1], line)
       } else {
-        emitByte(codes)
+        emitByte(codes, line)
       }
     } else {
       // unreable, supposely
@@ -255,7 +256,7 @@ mod.compile = fn(src, filename) {
     }
     let opCode = opCodes[operatorType]
     if opCode {
-      emitByte(opCode)
+      emitByte(opCode, parser.previous.line)
     } else {
       // unreable, supposely
       error("bad literal op: " + types.TOKEN_NAME[operatorType])
@@ -273,19 +274,22 @@ mod.compile = fn(src, filename) {
 
   fn number() {
     let value = parser.previous.literal
+    let line = parser.previous.line
     if value >= 0 and value < 256 {
-      emitBytes(OP.CONST_BYTE, value)
+      emitBytes(OP.CONST_BYTE, value, line)
     } else {
-      emitConstant(NUMBER_VAL(value))
+      emitConstant(NUMBER_VAL(value), line)
     }
   }
 
   fn string() {
-    emitConstant(ObjectString(parser.previous.literal))
+    let line = parser.previous.line
+    emitConstant(ObjectString(parser.previous.literal), line)
   }
 
   fn unary() {
     let opType = parser.previous.type
+    let line = parser.previous.line
 
     parsePrecedence(PREC.UNARY)
 
@@ -295,7 +299,7 @@ mod.compile = fn(src, filename) {
     }
     let opCode = opCodes[opType]
     if opCode {
-      emitByte(opCode)
+      emitByte(opCode, line)
     } else {
       // unreable, supposely
       error("bad unary op: " + types.TOKEN_NAME[opType])
