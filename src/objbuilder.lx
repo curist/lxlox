@@ -1,6 +1,9 @@
 let lib = import "src/lib.lx"
+let types = import "src/types.lx"
 
 let VERSION = 0
+
+let ValueType = types.ValueType
 
 // obj layout
 // LX:        2
@@ -11,22 +14,11 @@ let VERSION = 0
 // CODE_SECTION: ?
 //      CONST_COUNT: 1
 //      SIZE: 4 little endian
-// CONST_SECTION: follow right after a CODE_SECTION (XXX: or should we do some padding?)
+// CONST_SECTION: follow right after a CODE_SECTION
 //      SIZE: 4  let's left size here, so it's possible for us to jump to next chunk
 //   every const is like
 //      TYPE:  1
 //      VALUE: various length
-//      currently we only have TYPE 00, as double, and it takes 8 bytes
-// constants section should be defined at TBD: later
-
-let ValueType = {
-  let iota = lib.iota(0)
-  {
-    BOOL:    iota(),
-    NIL:     iota(),
-    DOUBLE:  iota(),
-  }
-}
 
 fn int32ToBytes(num) {
   // always return 4 bytes
@@ -39,6 +31,12 @@ fn int32ToBytes(num) {
   num = lib.floor(num / 256)
   bytes[3] = lib.tohex(num % 256)
   return bytes
+}
+
+fn doubleToBytes(num) {
+  lib.map(Lx.doubleToUint8Array(num), fn(n) {
+    lib.tohex(n)
+  })
 }
 
 fn writeBytesAt(arr1, arr2, index) {
@@ -81,19 +79,24 @@ fn objbuilder(chunks) {
 
     let constants = []
     let constTypeHandlers = {
-      [ValueType.DOUBLE]: fn(value) {
-        let double = lib.map(Lx.doubleToUint8Array(value), fn(n) {
-          lib.tohex(n)
-        })
+      // NOTE: not having nil or bool handlers here,
+      // since those are represented directly as byte codes
+      [ValueType.NUMBER]: fn(value) {
+        let double = doubleToBytes(value)
+        constants = append(constants, lib.tohex(ValueType.NUMBER))
         constants = concat(constants, double)
       },
     }
     for let i = 0; i < len(chunk.constants); i = i + 1 {
-      let value = chunk.constants[i]
-      // TODO: check constants type
-      let handler = constTypeHandlers[ValueType.DOUBLE]
-      constants = append(constants, lib.tohex(ValueType.DOUBLE))
-      handler(value)
+      let val = chunk.constants[i]
+      let handler = constTypeHandlers[val.kind]
+      if handler {
+        handler(val.value)
+      } else {
+        // should be unreachable
+        print("Invalid value handler type: " + str(val.kind))
+        Lx.exit(55)
+      }
     }
     // update constants section size
     writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)

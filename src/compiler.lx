@@ -4,6 +4,7 @@ let initScanner = import "src/scanner.lx"
 
 let TOKEN = types.TOKEN
 let OP = types.OP
+let ValueType = types.ValueType
 
 let mod = {}
 
@@ -25,6 +26,16 @@ let PREC = {
     // how do we resolve conflict between hashmap & block?
   }
 }
+
+fn Value(kind, value) {{
+  kind: kind,
+  value: value,
+}}
+
+fn BOOL_VAL(value)   { Value(ValueType.BOOL, value) }
+fn NIL_VAL(value)    { Value(ValueType.NIL, nil) }
+// XXX: ^ not sure if we need these two
+fn NUMBER_VAL(value) { Value(ValueType.NUMBER, value) }
 
 mod.debugPrint = fn(src) {
   let scanner = initScanner(src)
@@ -253,14 +264,17 @@ mod.compile = fn(src) {
     consume(TOKEN.RIGHT_PAREN, "Expect ')' after expression.")
   }
 
-
   fn number() {
     let value = parser.previous.literal
     if value >= 0 and value < 256 {
       emitBytes(OP.CONST_BYTE, value)
     } else {
-      emitConstant(value)
+      emitConstant(NUMBER_VAL(value))
     }
+  }
+
+  fn string() {
+    // TODO:
   }
 
   fn unary() {
@@ -303,7 +317,7 @@ mod.compile = fn(src) {
     [TOKEN.LESS]          : [nil,      binary, PREC.COMPARISON],
     [TOKEN.LESS_EQUAL]    : [nil,      binary, PREC.COMPARISON],
     [TOKEN.IDENTIFIER]    : [nil,      nil,    PREC.NONE],
-    [TOKEN.STRING]        : [nil,      nil,    PREC.NONE],
+    [TOKEN.STRING]        : [string,   nil,    PREC.NONE],
     [TOKEN.NUMBER]        : [number    nil,    PREC.NONE],
     [TOKEN.AND]           : [nil,      nil,    PREC.NONE],
     [TOKEN.CLASS]         : [nil,      nil,    PREC.NONE],

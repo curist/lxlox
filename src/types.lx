@@ -117,4 +117,15 @@ types.OP = {
   }
 }
 
+types.ValueType = {
+  let iota = lib.iota(0)
+  {
+    BOOL:    iota(),
+    NIL:     iota(),
+    NUMBER:  iota(),
+    OBJ:     iota(),
+  }
+}
+
+
 types
