@@ -70,7 +70,7 @@ mod.debugPrint = fn(src) {
   }
 }
 
-mod.compile = fn(src) {
+mod.compile = fn(src, filename) {
   let scanner = initScanner(src)
 
   // XXX: future
@@ -82,8 +82,10 @@ mod.compile = fn(src) {
   let getRule
 
   let chunks = [{
-    bytecode: []
-    constants: []
+    filename: filename,
+    bytecode: [],
+    constants: [],
+    lines: [],
   }]
 
   let parser = {
@@ -109,6 +111,7 @@ mod.compile = fn(src) {
   fn emitByte(byte) {
     let chunk = currentChunk()
     chunk.bytecode = append(chunk.bytecode, lib.tohex(byte))
+    chunk.lines = append(chunk.lines, parser.previous.line)
   }
 
   fn emitBytes(byte1, byte2) {

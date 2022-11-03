@@ -15,14 +15,19 @@ let ObjType = object.ObjType
 // TBD:       16 - (2+1+1+4) = 8
 // CODE_SECTION: ?
 //      SIZE: 4 little endian
-//      CODE: various length
+//      CODE: vary length
 //            CODE_SECTION guaranteed to be followed by 5 bytes of CONST_SECTION header
 // CONST_SECTION: follow right after a CODE_SECTION
 //      SIZE: 4  let's leave size here, so it's possible for us to jump to next chunk
 //      CONST_COUNT: 1
 //   every const is like
 //      TYPE:  1
-//      VALUE: various length
+//      VALUE: vary length
+// DEBUG_SECTION:
+//      SIZE: 4 little endian
+//      FILEPATH_LENGTH: 2 file path length
+//      FILEPATH: vary length
+//      TOKEN_LINE_NUMBER: 2 bytes each (which means we would only support line no. up to 65535)
 
 fn int32ToBytes(num) {
   // always return 4 bytes
@@ -34,6 +39,16 @@ fn int32ToBytes(num) {
   bytes[2] = lib.tohex(num % 256)
   num = lib.floor(num / 256)
   bytes[3] = lib.tohex(num % 256)
+  return bytes
+}
+
+fn numberToDoubleBytes(num) {
+  if num > 256*256 { return ["ff", "ff"] }
+  let bytes = [0, 0]
+  bytes[0] = lib.tohex(num % 256)
+  num = lib.floor(num / 256)
+  bytes[1] = lib.tohex(num % 256)
+  num = lib.floor(num / 256)
   return bytes
 }
 
@@ -138,8 +153,28 @@ fn objbuilder(chunks, debug) {
 
     // update constants section size
     writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)
-
     obj = concat(obj, constants)
+  }
+
+  if debug {
+    // save start index, we will update this to actual debug size
+    let debugSectionStart = len(obj)
+    // reserve debug section size
+    obj = concat(obj, int32ToBytes(0))
+    let debugLines = []
+
+    let filename = chunk.filename
+    let filePathStringLength = numberToDoubleBytes(len(filename))
+    debugLines = concat(debugLines, filePathStringLength)
+    debugLines = concat(debugLines, stringToBytes(filename))
+
+    for let i = 0; i < len(chunk.lines); i = i + 1 {
+      debugLines = concat(debugLines, numberToDoubleBytes(chunk.lines[i]))
+    }
+
+    // update debug section size
+    writeBytesAt(obj, int32ToBytes(len(debugLines)), debugSectionStart)
+    obj = concat(obj, debugLines)
   }
 
   // update obj size

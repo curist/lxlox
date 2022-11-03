@@ -20,7 +20,7 @@ fn main() {
   }
 
   let source = Lx.readTextFile(path)
-  let result = compiler.compile(source)
+  let result = compiler.compile(source, path)
   if !result.success {
     print("compile failed.")
     Lx.exit(65)
