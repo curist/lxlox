@@ -22,6 +22,8 @@ types.TOKEN = {
     RIGHT_PAREN: iota(),
     LEFT_BRACE: iota(),
     RIGHT_BRACE: iota(),
+    LEFT_BRACKET: iota(),
+    RIGHT_BRACKET: iota(),
     COMMA: iota(),
     DOT: iota(),
     MINUS: iota(),
@@ -30,8 +32,6 @@ types.TOKEN = {
     SLASH: iota(),
     STAR: iota(),
     COLON: iota(),
-    LEFT_BRACKET: iota(),
-    RIGHT_BRACKET: iota(),
     MOD: iota(),
 
     // One or two character tokens.
