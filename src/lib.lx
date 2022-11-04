@@ -92,13 +92,11 @@ let lib = {
       } else if type(x) == "map" {
         let mapkeys = keys(x)
         let s = "{"
-          let keyvalues = []
-          for let i = 0; i < len(mapkeys); i = i + 1 {
-            let k = mapkeys[i]
-            keyvalues = append(keyvalues, k + ": " + present(x[k]))
-          }
-          s = s + lib.join(keyvalues, ", ")
-          s = s + "}"
+        let keyvalues = lib.reduce(mapkeys, [], fn(acc, k) {
+          append(acc, k + ": " + present(x[k]))
+        })
+        s = s + lib.join(keyvalues, ", ")
+        s = s + "}"
       } else if type(x) == "string" {
         "\"" + x + "\""
       } else {

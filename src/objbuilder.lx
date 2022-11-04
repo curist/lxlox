@@ -2,6 +2,14 @@ let lib = require("src/lib.lx")
 let types = require("src/types.lx")
 let object = require("src/object.lx")
 
+let concat = lib.concat
+let range = lib.range
+
+// let's get fancy with the names?
+let fold = lib.reduce
+let each = lib.foreach
+let map = lib.map
+
 let VERSION = 0
 
 let ValueType = types.ValueType
@@ -53,18 +61,15 @@ fn numberToDoubleBytes(num) {
 }
 
 fn doubleToBytes(num) {
-  lib.map(Lx.doubleToUint8Array(num), fn(n) {
+  map(Lx.doubleToUint8Array(num), fn(n) {
     lib.tohex(n)
   })
 }
 
 fn stringToBytes(s) {
-  let bytes = []
-  for let i = 0; i < len(s); i = i + 1 {
-    let c = s[i]
-    bytes = append(bytes, lib.tohex(lib.ord(c)))
-  }
-  bytes
+  fold(range(s), [], fn(bytes, c) {
+    append(bytes, lib.tohex(lib.ord(c)))
+  })
 }
 
 fn writeBytesAt(arr1, arr2, index) {
@@ -81,8 +86,6 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-let concat = lib.concat
-
 fn objbuilder(chunks, debug) {
   // XXX: handling only 1 chunk for now
   let chunk = chunks[0]
@@ -94,9 +97,9 @@ fn objbuilder(chunks, debug) {
 
   let header = ["4c", "58", lib.tohex(VERSION), flags]
   let fillRest = 16 - len(header)
-  for let i = 0; i < fillRest; i = i + 1 {
+  each(range(fillRest), fn() {
     header = append(header, "00")
-  }
+  })
   obj = concat(obj, header)
 
   let codeSize = len(chunk.bytecode)
@@ -138,8 +141,7 @@ fn objbuilder(chunks, debug) {
         }
       },
     }
-    for let i = 0; i < len(chunk.constants); i = i + 1 {
-      let val = chunk.constants[i]
+    each(chunk.constants, fn(val) {
       let handler = constTypeHandlers[val.kind]
       if handler {
         constants = append(constants, lib.tohex(val.kind))
@@ -149,7 +151,7 @@ fn objbuilder(chunks, debug) {
         print("Invalid value handler type: " + str(val.kind))
         Lx.exit(55)
       }
-    }
+    })
 
     // update constants section size
     writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)
@@ -168,9 +170,9 @@ fn objbuilder(chunks, debug) {
     debugLines = concat(debugLines, filePathStringLength)
     debugLines = concat(debugLines, stringToBytes(filename))
 
-    for let i = 0; i < len(chunk.lines); i = i + 1 {
-      debugLines = concat(debugLines, numberToDoubleBytes(chunk.lines[i]))
-    }
+    each(chunk.lines, fn(line) {
+      debugLines = concat(debugLines, numberToDoubleBytes(line))
+    })
 
     // update debug section size
     writeBytesAt(obj, int32ToBytes(len(debugLines)), debugSectionStart)
