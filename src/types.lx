@@ -2,14 +2,13 @@ let lib = require("src/lib.lx")
 
 let types = {}
 
+let range = lib.range
 
 fn enumNameMapper(enum) {
-  let enumKeys = keys(enum)
-  let mapping = {}
-  for let i = 0; i < len(enumKeys); i = i + 1 {
-    mapping[enum[enumKeys[i]]] = enumKeys[i]
-  }
-  return mapping
+  lib.reduce(keys(enum), {}, fn(acc, k, i) {
+    acc[enum[k]] = k
+    acc
+  })
 }
 
 types.TOKEN = {
@@ -80,18 +79,13 @@ types.TOKEN = {
 }
 types.TOKEN_NAME = enumNameMapper(types.TOKEN)
 
-types.KEYWORDS = {
-  let tokenKeys = keys(types.TOKEN)
-  let mapping = {}
-  for let i = 0; i < len(tokenKeys); i = i + 1 {
-    let tokenKey = tokenKeys[i]
-    let enum = types.TOKEN[tokenKey]
-    if enum >= 400 and enum < 500 {
-      mapping[Lx.toLowerCase(tokenKey)] = true
-    }
+types.KEYWORDS = lib.reduce(keys(types.TOKEN), {}, fn(acc, k) {
+  let enum = types.TOKEN[k]
+  if enum >= 400 and enum < 500 {
+    acc[Lx.toLowerCase(k)] = true
   }
-  mapping
-}
+  acc
+})
 
 // XXX: need to keep this in sync with clox
 types.OP = {

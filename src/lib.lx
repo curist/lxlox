@@ -18,6 +18,13 @@ let lib = {
     let i = start - 1
     fn() { i = i + 1 }
   },
+  range: fn(value) { Lx.range(value) },
+  foreach: fn(arr, cb) {
+    let length = len(arr)
+    for let i = 0; i < length; i = i + 1 {
+      cb(arr[i], i, arr)
+    }
+  },
   map: fn(arr, cb) {
     let result = []
     let length = len(arr)
@@ -25,6 +32,14 @@ let lib = {
       result = append(result, cb(arr[i], i, arr))
     }
     result
+  },
+  reduce: fn(arr, init, cb) {
+    let acc = init
+    let length = len(arr)
+    for let i = 0; i < length; i = i + 1 {
+      acc = cb(acc, arr[i], i)
+    }
+    acc
   },
   tohex: fn(num) {
     let map = {
