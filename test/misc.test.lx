@@ -1,8 +1,8 @@
-let makeTestSuite = require("test/makeTestSuite.lx")
+let makeTestSuite = import "test/makeTestSuite.lx"
 let suite = makeTestSuite()
 let test = suite.defineTest
 
-let lib = require("src/lib.lx")
+let lib = import "src/lib.lx"
 
 test("concat", fn(assert) {
   let concat = lib.concat

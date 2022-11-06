@@ -1,5 +1,5 @@
-let lib = require("src/lib.lx")
-let types = require("src/types.lx")
+let lib = import "src/lib.lx"
+let types = import "src/types.lx"
 let ValueType = types.ValueType
 
 let mod = {}

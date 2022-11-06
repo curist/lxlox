@@ -1,9 +1,9 @@
-let makeTestSuite = require("test/makeTestSuite.lx")
+let makeTestSuite = import "test/makeTestSuite.lx"
 let suite = makeTestSuite()
 let test = suite.defineTest
 
-let initScanner = require("src/scanner.lx")
-let types = require("src/types.lx")
+let initScanner = import "src/scanner.lx"
+let types = import "src/types.lx"
 let TOKEN = types.TOKEN
 
 test("scanner - basic", fn(assert) {
