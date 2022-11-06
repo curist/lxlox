@@ -302,13 +302,37 @@ mod.compile = fn(src, filename) {
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
+  fn synchronize() {
+    parser.panicMode = false
+    for parser.current.type != TOKEN.EOF {
+      let breakpoints = {
+        [TOKEN.FN]: true,
+        [TOKEN.LET]: true,
+        [TOKEN.FOR]: true,
+        [TOKEN.IF]: true,
+        [TOKEN.RETURN]: true,
+        [TOKEN.DEFER]: true,
+        [TOKEN.IMPORT]: true,
+      }
+      if breakpoints[parser.current.type] {
+        return
+      }
+      advance()
+    }
+  }
+
   fn expressionStatement() {
     let line = parser.current.line
     expression()
-    emitByte(OP.POP, line)
-    // XXX: let's just pop it for now
-    // when we get to block scope, we will figure out
-    // how to implicitly return last evaluated expression
+
+    if parser.panicMode {
+      synchronize()
+    } else {
+      emitByte(OP.POP, line)
+      // XXX: let's just pop it for now
+      // when we get to block scope, we will figure out
+      // how to implicitly return last evaluated expression
+    }
   }
 
   fn grouping() {
