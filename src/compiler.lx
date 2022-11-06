@@ -212,6 +212,14 @@ mod.compile = fn(src, filename) {
     errorAtCurrent(message)
   }
 
+  fn check(type) { parser.current.type == type }
+
+  fn match(type) {
+    if !check(type) {return false}
+    advance()
+    true
+  }
+
   fn emitReturn() {
     emitByte(OP.RETURN, parser.previous.line)
   }
@@ -292,6 +300,15 @@ mod.compile = fn(src, filename) {
 
   fn expression() {
     parsePrecedence(PREC.ASSIGNMENT)
+  }
+
+  fn expressionStatement() {
+    let line = parser.current.line
+    expression()
+    emitByte(OP.POP, line)
+    // XXX: let's just pop it for now
+    // when we get to block scope, we will figure out
+    // how to implicitly return last evaluated expression
   }
 
   fn grouping() {
@@ -386,7 +403,9 @@ mod.compile = fn(src, filename) {
   }
 
   advance()
-  expression()
+  for !match(TOKEN.EOF) {
+    expressionStatement()
+  }
   consume(TOKEN.EOF, "Expect end of expression.")
   endCompiler()
 

@@ -2,8 +2,6 @@ let lib = import "src/lib.lx"
 
 let types = {}
 
-let range = lib.range
-
 fn enumNameMapper(enum) {
   lib.reduce(keys(enum), {}, fn(acc, k, i) {
     acc[enum[k]] = k
@@ -97,6 +95,7 @@ types.OP = {
     TRUE: iota(),
     FALSE: iota(),
     EQUAL: iota(),
+    POP: iota(),
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),

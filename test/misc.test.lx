@@ -1,4 +1,4 @@
-let makeTestSuite = import "test/makeTestSuite.lx"
+let makeTestSuite = import "./makeTestSuite.lx"
 let suite = makeTestSuite()
 let test = suite.defineTest
 
