@@ -1,7 +1,17 @@
+let empty
 let a = "global"
 {
   let a = "block 1"
   {
+    let a = a
     let b = a + " innermost b"
   }
 }
+
+let c = {
+  a + a + { a }
+}
+
+
+let x = (let y = 10)
+x * y - 58

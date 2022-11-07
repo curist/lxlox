@@ -271,6 +271,16 @@ mod.compile = fn(src, filename) {
     nameTokenA.lexeme == nameTokenB.lexeme
   }
 
+  fn resolveLocal(compiler, name) {
+    for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
+      let local = compiler.locals[i]
+      if identifiersEqual(name, local.name) {
+        return i
+      }
+    }
+    return -1
+  }
+
   fn addLocal(name) {
     if compiler.localCount >= 256 {
       error("Too many local variables in function.")
@@ -387,20 +397,16 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  let blocker // forward declaration to cover mutual recursive :(
+  let letExpression
   fn expression() {
-    parsePrecedence(PREC.ASSIGNMENT)
-  }
-
-  fn letExpression() {
-    let line = parser.current.line
-    let global = parseVariable("Expect variable name.")
-    if match(TOKEN.EQUAL) {
-      expression()
+    if match(TOKEN.LET) {
+      letExpression()
+    } else if match(TOKEN.LEFT_BRACE) {
+      blocker()
     } else {
-      emiteByte(OP.NIL, line)
+      parsePrecedence(PREC.ASSIGNMENT)
     }
-    defineVariable(global, line)
-    emitBytes(OP.CONSTANT, global, line)
   }
 
   fn synchronize() {
@@ -422,37 +428,53 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  let block // forward declaration to cover mutual recursive :(
   fn expressionStatement() {
     let line = parser.current.line
-
-    if match(TOKEN.LET) {
-      letExpression()
-    } else if match(TOKEN.LEFT_BRACE) {
-      beginScope()
-      block()
-      endScope()
-    } else {
-      expression()
-    }
+    expression()
 
     if parser.panicMode {
       synchronize()
     } else {
       emitByte(OP.POP, line)
-      // XXX: let's just pop it for now
-      // when we get to block scope, we will figure out
-      // how to implicitly return last evaluated expression
     }
   }
 
-  block = fn() {
+  letExpression = fn() {
+    let line = parser.current.line
+    let global = parseVariable("Expect variable name.")
+    if match(TOKEN.EQUAL) {
+      expression()
+    } else {
+      emitByte(OP.NIL, line)
+    }
+    emitByte(OP.DUP, line)
+    defineVariable(global, line)
+    emitBytes(OP.CONSTANT, global, line)
+    emitByte(OP.POP, line)
+  }
+
+
+  fn block() {
     for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
-      expressionStatement()
+      let line = parser.current.line
+      expression()
+
+      // don't pop last evaluated expression
+      // so we check ahead if we are going to run another loop
+      if !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+        emitByte(OP.POP, line)
+      }
     }
 
     consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
   }
+
+  blocker = fn() {
+    beginScope()
+    block()
+    endScope()
+  }
+
 
 
   fn grouping(canAssign) {
@@ -476,13 +498,26 @@ mod.compile = fn(src, filename) {
   }
 
   fn namedVariable(nameToken, canAssign) {
-    let line = parser.current.line
-    let nameConstIndex = identifierConstant(nameToken)
+    let line = parser.previous.line
+
+    let getOp
+    let setOp
+    let arg = resolveLocal(compiler, nameToken)
+
+    if arg != -1 {
+      getOp = OP.GET_LOCAL
+      setOp = OP.SET_LOCAL
+    } else {
+      arg = identifierConstant(nameToken)
+      getOp = OP.GET_GLOBAL
+      setOp = OP.SET_GLOBAL
+    }
+
     if canAssign and match(TOKEN.EQUAL) {
       expression()
-      emitBytes(OP.SET_GLOBAL, nameConstIndex, line)
+      emitBytes(setOp, arg, line)
     } else {
-      emitBytes(OP.GET_GLOBAL, nameConstIndex, line)
+      emitBytes(getOp, arg, line)
     }
   }
 
@@ -512,7 +547,7 @@ mod.compile = fn(src, filename) {
   parseRules = {
     [TOKEN.LEFT_PAREN]    : [grouping, nil,    PREC.NONE],
     [TOKEN.RIGHT_PAREN]   : [nil,      nil,    PREC.NONE],
-    [TOKEN.LEFT_BRACE]    : [nil,      nil,    PREC.NONE], 
+    [TOKEN.LEFT_BRACE]    : [blocker,  nil,    PREC.NONE], 
     [TOKEN.RIGHT_BRACE]   : [nil,      nil,    PREC.NONE],
     [TOKEN.LEFT_BRACKET]  : [nil,      nil,    PREC.NONE], 
     [TOKEN.RIGHT_BRACKET] : [nil,      nil,    PREC.NONE],
@@ -547,9 +582,9 @@ mod.compile = fn(src, filename) {
     [TOKEN.RETURN]        : [nil,      nil,    PREC.NONE],
     [TOKEN.BREAK]         : [nil,      nil,    PREC.NONE],
     [TOKEN.TRUE]          : [literal,  nil,    PREC.NONE],
-    [TOKEN.LET]           : [nil,      nil,    PREC.NONE],
     [TOKEN.ERROR]         : [nil,      nil,    PREC.NONE],
     [TOKEN.EOF]           : [nil,      nil,    PREC.NONE],
+    [TOKEN.LET]           : [letExpression, nil,    PREC.NONE],
   }
 
   getRule = fn(type) {
