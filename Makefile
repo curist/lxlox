@@ -17,5 +17,6 @@ dump:
 	lx.ts src/main.lx --debug test/stub/ch21.lx | xxd -r -p > /tmp/ch21.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch22.lx | xxd -r -p > /tmp/ch22.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch23.lx | xxd -r -p > /tmp/ch23.lxobj &
+	lx.ts src/main.lx --debug test/stub/ch23-1.lx | xxd -r -p > /tmp/ch23-1.lxobj &
 
 all: run test dump

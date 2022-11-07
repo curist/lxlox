@@ -192,9 +192,7 @@ fn objbuilder(chunks, debug) {
       for let i = 0; i < totalSize; {
         for let j = i; j < i + 16 and j < totalSize; j = j + 1 {
           buffered = buffered + obj[j]
-          if j % 4 == 3 {
-            buffered = buffered + "    "
-          } else {
+          if j % 2 == 1 {
             buffered = buffered + " "
           }
         }

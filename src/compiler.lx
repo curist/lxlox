@@ -563,16 +563,20 @@ mod.compile = fn(src, filename) {
 
   fn forExpr() {
     beginScope()
+    defer endScope()
 
-    // we want to insert a nil right before the loop
-    // so, at the start of a loop, we can pop up last
-    // evaluated block result
+    // reserved a local for block return value
     emitByte(OP.NIL, parser.previous.line)
+    addLocal({ lexeme: "" })
+    markInitialized()
+    let blockLocal = compiler.localCount - 1
+
 
     let loopStart = len(currentChunk().bytecode)
     let loopStartLine = parser.previous.line
 
     let exitJump = -1
+
 
     fn forCond() {
       // helper to parse after `for init;` part,
@@ -582,7 +586,6 @@ mod.compile = fn(src, filename) {
         expression()
 
         exitJump = emitJump(OP.JUMP_IF_FALSE)
-        emitByte(OP.POP, parser.previous.line)
         emitByte(OP.POP, parser.previous.line)
       }
       consume(TOKEN.SEMICOLON, "Expect ';' after loop condition.")
@@ -614,10 +617,8 @@ mod.compile = fn(src, filename) {
         // we don't need to update loopStart
         exitJump = emitJump(OP.JUMP_IF_FALSE)
         emitByte(OP.POP, parser.previous.line)
-        emitByte(OP.POP, parser.previous.line)
       } else {
         // is `for init;cond; {}`, update loopStart
-        emitByte(OP.POP, parser.previous.line)
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
 
@@ -627,14 +628,14 @@ mod.compile = fn(src, filename) {
 
     consume(TOKEN.LEFT_BRACE, "Expect '{' for block.")
     blocker()
+    emitBytes(OP.SET_LOCAL, blockLocal, parser.previous.line)
+    emitByte(OP.POP, parser.previous.line)
     emitLoop(loopStart, loopStartLine)
 
     if exitJump != -1 {
       patchJump(exitJump)
       emitByte(OP.POP, parser.previous.line)
     }
-
-    endScope()
   }
 
   fn string(canAssign) {

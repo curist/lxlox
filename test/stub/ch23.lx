@@ -13,12 +13,3 @@ let result = for ; x <= 10; x = x + 1 {
   sum = sum + x
 }
 
-let result2_nil = for x < 0 {
-  123
-}
-let i = 100
-
-for i = 0; i < 3; i = i + 1 {
-  x = i
-}
-
