@@ -112,6 +112,8 @@ types.OP = {
     NOT: iota(),
     MOD: iota(),
     NEGATE: iota(),
+    JUMP: iota(),
+    JUMP_IF_FALSE: iota(),
     RETURN: iota(),
   }
 }

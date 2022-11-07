@@ -8,6 +8,8 @@ let OP = types.OP
 let ValueType = types.ValueType
 let ObjType = object.ObjType
 
+let UINT16_MAX = 256 * 256
+
 let mod = {}
 
 let PREC = {
@@ -133,6 +135,13 @@ mod.compile = fn(src, filename) {
     emitByte(byte2, line)
   }
 
+  fn emitJump(instruction) {
+    let line = parser.current.line
+    emitByte(instruction, line)
+    emitBytes(255, 255, line)
+    return len(currentChunk().bytecode) - 2
+  }
+
   let constantsCache = {}
 
   fn calcValueKey(value) {
@@ -176,6 +185,16 @@ mod.compile = fn(src, filename) {
 
   fn emitConstant(value, line) {
     emitBytes(OP.CONSTANT, makeConstant(value), line)
+  }
+
+  fn patchJump(offset) {
+    let jump = len(currentChunk().bytecode) - offset - 2
+
+    if jump > UINT16_MAX {
+      error("Too much code to jump over.")
+    }
+    currentChunk().bytecode[offset] = lib.tohex(lib.floor(jump / 256))
+    currentChunk().bytecode[offset + 1] = lib.tohex(jump % 256)
   }
 
   fn errorAt(token, message) {
@@ -405,16 +424,8 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  let blocker // forward declaration to cover mutual recursive :(
-  let letExpression
   fn expression() {
-    if match(TOKEN.LET) {
-      letExpression()
-    } else if match(TOKEN.LEFT_BRACE) {
-      blocker()
-    } else {
-      parsePrecedence(PREC.ASSIGNMENT)
-    }
+    parsePrecedence(PREC.ASSIGNMENT)
   }
 
   fn synchronize() {
@@ -447,19 +458,6 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  letExpression = fn() {
-    let line = parser.current.line
-    let global = parseVariable("Expect variable name.")
-    if match(TOKEN.EQUAL) {
-      expression()
-    } else {
-      emitByte(OP.NIL, line)
-    }
-    emitByte(OP.DUP, line)
-    defineVariable(global, line)
-  }
-
-
   fn block() {
     for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
       let line = parser.current.line
@@ -475,12 +473,45 @@ mod.compile = fn(src, filename) {
     consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
   }
 
-  blocker = fn() {
+  fn blocker() {
     beginScope()
     block()
     endScope()
   }
 
+  fn ifExpr() {
+    expression()
+
+    consume(TOKEN.LEFT_BRACE, "Expect '{' after condition.")
+
+    let thenJump = emitJump(OP.JUMP_IF_FALSE)
+    emitByte(OP.POP, parser.previous.line)
+    blocker()
+
+    let elseJump = emitJump(OP.JUMP)
+
+    patchJump(thenJump)
+
+    emitByte(OP.POP, parser.previous.line)
+    if match(TOKEN.ELSE) {
+      expression()
+    } else {
+      emitByte(OP.NIL, parser.previous.line)
+    }
+    patchJump(elseJump)
+  }
+
+  fn letExpr() {
+    let line = parser.current.line
+    let global = parseVariable("Expect variable name.")
+    if match(TOKEN.EQUAL) {
+      expression()
+    } else {
+      emitByte(OP.NIL, line)
+    }
+    emitByte(OP.DUP, line)
+    defineVariable(global, line)
+  }
 
 
   fn grouping(canAssign) {
@@ -573,7 +604,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.GREATER_EQUAL] : [nil,           binary, PREC.COMPARISON],
     [TOKEN.LESS]          : [nil,           binary, PREC.COMPARISON],
     [TOKEN.LESS_EQUAL]    : [nil,           binary, PREC.COMPARISON],
-    [TOKEN.LET]           : [letExpression, nil,    PREC.NONE],
+    [TOKEN.LET]           : [letExpr,       nil,    PREC.NONE],
     [TOKEN.IDENTIFIER]    : [variable,      nil,    PREC.NONE],
     [TOKEN.STRING]        : [string,        nil,    PREC.NONE],
     [TOKEN.NUMBER]        : [number         nil,    PREC.NONE],
@@ -582,7 +613,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.FALSE]         : [literal,       nil,    PREC.NONE],
     [TOKEN.FOR]           : [nil,           nil,    PREC.NONE],
     [TOKEN.FN]            : [nil,           nil,    PREC.NONE],
-    [TOKEN.IF]            : [nil,           nil,    PREC.NONE],
+    [TOKEN.IF]            : [ifExpr,        nil,    PREC.NONE],
     [TOKEN.NIL]           : [literal,       nil,    PREC.NONE],
     [TOKEN.OR]            : [nil,           nil,    PREC.NONE],
     [TOKEN.DEFER]         : [nil,           nil,    PREC.NONE],
