@@ -34,6 +34,16 @@ fn Value(kind, value) {{
   value: value,
 }}
 
+fn Local(tokenName, depth) {{
+  name: tokenName,
+  depth: depth,
+}}
+
+fn Compiler(depth) {{
+  locals: [],
+  scopeDepth: depth,
+}}
+
 fn BOOL_VAL(value)   { Value(ValueType.BOOL, value) }
 fn NIL_VAL(value)    { Value(ValueType.NIL, nil) }
 // XXX: ^ not sure if we need these two
@@ -95,6 +105,8 @@ mod.compile = fn(src, filename) {
     hadError: false,
     panicMode: false,
   }
+
+  let compiler = Compiler(0)
 
   fn currentChunk() {
     // XXX: probably will need to change this later
@@ -267,6 +279,14 @@ mod.compile = fn(src, filename) {
     emitReturn()
   }
 
+  fn beginScope() {
+    compiler.scopeDepth = compiler.scopeDepth + 1
+  }
+
+  fn endScope() {
+    compiler.scopeDepth = compiler.scopeDepth - 1
+  }
+
   fn binary(canAssign) {
     let operatorType = parser.previous.type
     let line = parser.previous.line
@@ -320,6 +340,14 @@ mod.compile = fn(src, filename) {
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
+  fn block() {
+    for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+      expressionStatement()
+    }
+
+    consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
+  }
+
   fn letExpression() {
     let line = parser.current.line
     let global = parseVariable("Expect variable name.")
@@ -356,6 +384,10 @@ mod.compile = fn(src, filename) {
 
     if match(TOKEN.LET) {
       letExpression()
+    } else if match(TOKEN.LEFT_BRACE) {
+      beginScope()
+      block()
+      endScope()
     } else {
       expression()
     }
