@@ -41,6 +41,7 @@ fn Local(tokenName, depth) {{
 
 fn Compiler(depth) {{
   locals: [],
+  localCount: 0,
   scopeDepth: depth,
 }}
 
@@ -266,12 +267,55 @@ mod.compile = fn(src, filename) {
     makeConstant(ObjectString(nameToken.lexeme))
   }
 
+  fn identifiersEqual(nameTokenA, nameTokenB) {
+    nameTokenA.lexeme == nameTokenB.lexeme
+  }
+
+  fn addLocal(nameToken) {
+    if compiler.localCount >= 256 {
+      error("Too many local variables in function.")
+      return
+    }
+    compiler.locals = append(compiler.locals, Local(name, compiler.scopeDepth))
+    compiler.localCount = compiler.localCount + 1
+  }
+
+  fn declareVariable() {
+    if compiler.scopeDepth == 0 {
+      return
+    }
+
+    let nameToken = parser.previous
+
+    for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
+      let local = compiler.locals[i]
+      if local.depth != -1 and local.depth < compiler.scopeDepth {
+        break
+      }
+
+      if identifiersEqual(nameToken, local.name) {
+        error("Already a variable with this name in this scope.")
+      }
+    }
+
+    addLocal(nameToken)
+  }
+
   fn parseVariable(errorMessage) {
     consume(TOKEN.IDENTIFIER, errorMessage)
+
+    declareVariable()
+    if compiler.scopeDepth > 0 {
+      return 0
+    }
+
     identifierConstant(parser.previous)
   }
 
   fn defineVariable(global, line) {
+    if compiler.scopeDepth > 0 {
+      return
+    }
     emitBytes(OP.DEFINE_GLOBAL, global, line)
   }
 
@@ -285,6 +329,13 @@ mod.compile = fn(src, filename) {
 
   fn endScope() {
     compiler.scopeDepth = compiler.scopeDepth - 1
+
+    for compiler.localCount > 0 and
+      compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth {
+      // TODO: implement ch 22.3 OP_POPN
+      emitByte(OP.POP, parser.previous.line)
+      compiler.localCount = compiler.localCount - 1
+    }
   }
 
   fn binary(canAssign) {
