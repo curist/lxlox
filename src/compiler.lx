@@ -230,7 +230,9 @@ mod.compile = fn(src, filename) {
       error("Expect expression.")
       return
     }
-    prefixRule()
+
+    let canAssign = precedence <= PREC.ASSIGNMENT
+    prefixRule(canAssign)
 
     for precedence <= getRule(parser.current.type).precedence {
       advance()
@@ -240,7 +242,11 @@ mod.compile = fn(src, filename) {
         error("Expect expression.")
         return
       }
-      infixRule()
+      infixRule(canAssign)
+    }
+
+    if canAssign and match(TOKEN.EQUAL) {
+      error("Invalid assignment target.")
     }
   }
 
@@ -261,7 +267,7 @@ mod.compile = fn(src, filename) {
     emitReturn()
   }
 
-  fn binary() {
+  fn binary(canAssign) {
     let operatorType = parser.previous.type
     let line = parser.previous.line
     let rule = getRule(operatorType)
@@ -293,7 +299,7 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn literal() {
+  fn literal(canAssign) {
     let operatorType = parser.previous.type
 
     let opCodes = {
@@ -364,12 +370,12 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn grouping() {
+  fn grouping(canAssign) {
     expression()
     consume(TOKEN.RIGHT_PAREN, "Expect ')' after expression.")
   }
 
-  fn number() {
+  fn number(canAssign) {
     let value = parser.previous.literal
     let line = parser.previous.line
     if value >= 0 and value < 256 {
@@ -379,22 +385,27 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn string() {
+  fn string(canAssign) {
     let line = parser.previous.line
     emitConstant(ObjectString(parser.previous.literal), line)
   }
 
-  fn namedVariable(nameToken) {
+  fn namedVariable(nameToken, canAssign) {
     let line = parser.current.line
     let nameConstIndex = identifierConstant(nameToken)
-    emitBytes(OP.GET_GLOBAL, nameConstIndex, line)
+    if canAssign and match(TOKEN.EQUAL) {
+      expression()
+      emitBytes(OP.SET_GLOBAL, nameConstIndex, line)
+    } else {
+      emitBytes(OP.GET_GLOBAL, nameConstIndex, line)
+    }
   }
 
-  fn variable() {
-    namedVariable(parser.previous)
+  fn variable(canAssign) {
+    namedVariable(parser.previous, canAssign)
   }
 
-  fn unary() {
+  fn unary(canAssign) {
     let opType = parser.previous.type
     let line = parser.previous.line
 
