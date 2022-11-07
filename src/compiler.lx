@@ -589,7 +589,6 @@ mod.compile = fn(src, filename) {
 
     let exitJump = -1
 
-
     fn forCond() {
       // helper to parse after `for init;` part,
       // we start to parse for optional `cond` part
@@ -631,7 +630,6 @@ mod.compile = fn(src, filename) {
         emitByte(OP.POP, parser.previous.line)
       } else {
         // is `for init;cond; {}`, update loopStart
-
         emitByte(OP.POP, parser.previous.line)
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
