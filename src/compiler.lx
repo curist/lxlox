@@ -271,7 +271,7 @@ mod.compile = fn(src, filename) {
     nameTokenA.lexeme == nameTokenB.lexeme
   }
 
-  fn addLocal(nameToken) {
+  fn addLocal(name) {
     if compiler.localCount >= 256 {
       error("Too many local variables in function.")
       return
@@ -391,14 +391,6 @@ mod.compile = fn(src, filename) {
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
-  fn block() {
-    for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
-      expressionStatement()
-    }
-
-    consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
-  }
-
   fn letExpression() {
     let line = parser.current.line
     let global = parseVariable("Expect variable name.")
@@ -430,6 +422,7 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  let block // forward declaration to cover mutual recursive :(
   fn expressionStatement() {
     let line = parser.current.line
 
@@ -452,6 +445,15 @@ mod.compile = fn(src, filename) {
       // how to implicitly return last evaluated expression
     }
   }
+
+  block = fn() {
+    for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+      expressionStatement()
+    }
+
+    consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
+  }
+
 
   fn grouping(canAssign) {
     expression()

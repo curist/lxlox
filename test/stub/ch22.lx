@@ -1,0 +1,7 @@
+let a = "global"
+{
+  let a = "block 1"
+  {
+    let b = a + " innermost b"
+  }
+}
