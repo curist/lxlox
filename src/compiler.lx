@@ -385,14 +385,27 @@ mod.compile = fn(src, filename) {
     compiler.scopeDepth = compiler.scopeDepth + 1
   }
 
-  fn endScope() {
+  fn endScope(preserveLast) {
     compiler.scopeDepth = compiler.scopeDepth - 1
 
-    for compiler.localCount > 0 and
-      compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth {
-      // TODO: implement ch 22.3 OP_POPN
-      emitByte(OP.POP, parser.previous.line)
-      compiler.localCount = compiler.localCount - 1
+    fn shouldPop() {
+      compiler.localCount > 0 and
+        compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth
+    }
+
+    fn canPopNext() {
+      compiler.localCount > 1 and
+        compiler.locals[compiler.localCount - 2].depth > compiler.scopeDepth
+    }
+
+    for shouldPop() {
+      if !preserveLast or canPopNext() {
+        // TODO: implement ch 22.3 OP_POPN
+        emitByte(OP.POP, parser.previous.line)
+        compiler.localCount = compiler.localCount - 1
+      } else {
+        break
+      }
     }
   }
 
@@ -497,7 +510,7 @@ mod.compile = fn(src, filename) {
   fn blocker() {
     beginScope()
     block()
-    endScope()
+    endScope(false)
   }
 
   fn ifExpr() {
@@ -563,7 +576,6 @@ mod.compile = fn(src, filename) {
 
   fn forExpr() {
     beginScope()
-    defer endScope()
 
     // reserved a local for block return value
     emitByte(OP.NIL, parser.previous.line)
@@ -619,6 +631,8 @@ mod.compile = fn(src, filename) {
         emitByte(OP.POP, parser.previous.line)
       } else {
         // is `for init;cond; {}`, update loopStart
+
+        emitByte(OP.POP, parser.previous.line)
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
 
@@ -636,6 +650,9 @@ mod.compile = fn(src, filename) {
       patchJump(exitJump)
       emitByte(OP.POP, parser.previous.line)
     }
+    endScope(true)
+    emitByte(OP.DUP, parser.previous.line)
+    endScope(false)
   }
 
   fn string(canAssign) {

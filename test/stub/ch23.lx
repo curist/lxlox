@@ -9,7 +9,10 @@ false or x + 10
 let x = 0
 let sum = 0
 
-let result = for ; x <= 10; x = x + 1 {
+let result = for x = 1; x <= 10; x = x + 1 {
   sum = sum + x
 }
+
+result * 2
+
 
