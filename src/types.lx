@@ -114,6 +114,7 @@ types.OP = {
     NEGATE: iota(),
     JUMP: iota(),
     JUMP_IF_FALSE: iota(),
+    LOOP: iota(),
     RETURN: iota(),
   }
 }

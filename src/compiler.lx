@@ -135,6 +135,18 @@ mod.compile = fn(src, filename) {
     emitByte(byte2, line)
   }
 
+  fn emitLoop(loopStart, line) {
+    emitByte(OP.LOOP, line)
+
+    let offset = len(currentChunk().bytecode) - loopStart + 2
+    if offset > UINT16_MAX {
+      error("Loop body too large.")
+    }
+
+    emitByte(lib.floor(offset / 256), line)
+    emitByte(offset % 256, line)
+  }
+
   fn emitJump(instruction) {
     let line = parser.current.line
     emitByte(instruction, line)
@@ -549,6 +561,27 @@ mod.compile = fn(src, filename) {
     patchJump(endJump)
   }
 
+  fn forExpr() {
+    emitByte(OP.NIL, parser.previous.line)
+
+    let loopStart = len(currentChunk().bytecode)
+    let loopStartLine = parser.previous.line
+
+    expression()
+    // TODO: support `for ; {}` & `for ;; {}`
+
+    let exitJump = emitJump(OP.JUMP_IF_FALSE)
+    emitByte(OP.POP, parser.previous.line)
+    emitByte(OP.POP, parser.previous.line)
+
+    consume(TOKEN.LEFT_BRACE, "Expect '{' for block.")
+    blocker()
+    emitLoop(loopStart, loopStartLine)
+
+    patchJump(exitJump)
+    emitByte(OP.POP, parser.previous.line)
+  }
+
   fn string(canAssign) {
     let line = parser.previous.line
     emitConstant(ObjectString(parser.previous.literal), line)
@@ -631,7 +664,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.AND]           : [nil,           and_,   PREC.AND],
     [TOKEN.ELSE]          : [nil,           nil,    PREC.NONE],
     [TOKEN.FALSE]         : [literal,       nil,    PREC.NONE],
-    [TOKEN.FOR]           : [nil,           nil,    PREC.NONE],
+    [TOKEN.FOR]           : [forExpr,       nil,    PREC.NONE],
     [TOKEN.FN]            : [nil,           nil,    PREC.NONE],
     [TOKEN.IF]            : [ifExpr,        nil,    PREC.NONE],
     [TOKEN.NIL]           : [literal,       nil,    PREC.NONE],

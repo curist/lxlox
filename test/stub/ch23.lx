@@ -5,3 +5,16 @@ let x = if false {
 } else true and 3
 
 false or x + 10
+
+let x = 0
+let sum = 0
+
+let result = for x <= 10 {
+  sum = sum + x
+  x = x + 1
+  sum
+}
+
+let result2_nil = for x < 0 {
+  123
+}
