@@ -578,6 +578,11 @@ mod.compile = fn(src, filename) {
     return exitJump
   }
 
+  fn forIter() {
+    // helper to parse after `for init;cond;` part,
+    // we start to parse for optional `iter` part
+  }
+
   fn forExpr() {
     beginScope()
 
@@ -607,6 +612,7 @@ mod.compile = fn(src, filename) {
         emitByte(OP.POP, parser.previous.line)
       } else {
         // is `for init;cond; {}`, update loopStart
+        emitByte(OP.POP, parser.previous.line)
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
 
