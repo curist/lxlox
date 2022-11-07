@@ -109,6 +109,8 @@ mod.compile = fn(src, filename) {
     panicMode: false,
   }
 
+  let breakers = []
+
   let compiler = Compiler(0)
 
   fn currentChunk() {
@@ -573,9 +575,40 @@ mod.compile = fn(src, filename) {
     patchJump(endJump)
   }
 
+  fn popBreakers() {
+    // dumb way to do pop, but anyway...
+    // we can revisit this when we decide how to do array pop
+    let size = len(breakers)
+    let newBreakers = []
+    for let i = 0; i < size - 1; i = i + 1 {
+      newBreakers = append(newBreakers, breakers[i])
+    }
+    breakers = newBreakers
+  }
+
+  fn patchBreakers() {
+    let chunk = currentChunk()
+    let breaker = breakers[len(breakers) - 1]
+    let currentAddr = len(currentChunk().bytecode)
+    lib.foreach(breaker, fn(addr) {
+      let jump = currentAddr - addr - 2
+
+      if jump > UINT16_MAX {
+        error("Too much code to jump over.")
+      }
+      let upper = lib.tohex(lib.floor(jump / 256))
+      let lower = lib.tohex(jump % 256)
+
+      chunk.bytecode[addr] = upper
+      chunk.bytecode[addr + 1] = lower
+    })
+  }
+
   fn forExpr() {
     beginScope()
+    breakers = append(breakers, [])
     defer {
+      popBreakers()
       endScope()
       // XXX: let for loop resolves to nil for now
       // let's revisit how to properly return value
@@ -646,7 +679,18 @@ mod.compile = fn(src, filename) {
     if exitJump != -1 {
       patchJump(exitJump)
       emitByte(OP.POP, parser.previous.line)
+      patchBreakers()
     }
+  }
+
+  fn breakExpr() {
+    if len(breakers) == 0 {
+      error("Can only break inside a loop.")
+      return
+    }
+    let breaker = breakers[len(breakers) - 1]
+    let jump = emitJump(OP.JUMP)
+    breakers[len(breakers) - 1] = append(breaker, jump)
   }
 
   fn string(canAssign) {
@@ -738,7 +782,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.OR]            : [nil,           or_,    PREC.OR],
     [TOKEN.DEFER]         : [nil,           nil,    PREC.NONE],
     [TOKEN.RETURN]        : [nil,           nil,    PREC.NONE],
-    [TOKEN.BREAK]         : [nil,           nil,    PREC.NONE],
+    [TOKEN.BREAK]         : [breakExpr,     nil,    PREC.NONE],
     [TOKEN.TRUE]          : [literal,       nil,    PREC.NONE],
     [TOKEN.ERROR]         : [nil,           nil,    PREC.NONE],
     [TOKEN.EOF]           : [nil,           nil,    PREC.NONE],
