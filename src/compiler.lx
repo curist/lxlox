@@ -275,6 +275,9 @@ mod.compile = fn(src, filename) {
     for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
       let local = compiler.locals[i]
       if identifiersEqual(name, local.name) {
+        if local.depth == -1 {
+          error("Can't read local variable in its own initializer.")
+        }
         return i
       }
     }
@@ -286,7 +289,7 @@ mod.compile = fn(src, filename) {
       error("Too many local variables in function.")
       return
     }
-    compiler.locals = append(compiler.locals, Local(name, compiler.scopeDepth))
+    compiler.locals = append(compiler.locals, Local(name, -1))
     compiler.localCount = compiler.localCount + 1
   }
 
@@ -322,8 +325,13 @@ mod.compile = fn(src, filename) {
     identifierConstant(parser.previous)
   }
 
+  fn markInitialized() {
+    compiler.locals[compiler.localCount - 1].depth = compiler.scopeDepth
+  }
+
   fn defineVariable(global, line) {
     if compiler.scopeDepth > 0 {
+      markInitialized()
       return
     }
     emitBytes(OP.DEFINE_GLOBAL, global, line)

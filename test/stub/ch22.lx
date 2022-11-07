@@ -3,7 +3,7 @@ let a = "global"
 {
   let a = "block 1"
   {
-    let a = a
+    let a = "inner a"
     let b = a + " innermost b"
   }
 }
