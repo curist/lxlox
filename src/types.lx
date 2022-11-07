@@ -97,6 +97,8 @@ types.OP = {
     FALSE: iota(),
     EQUAL: iota(),
     POP: iota(),
+    GET_GLOBAL: iota(),
+    DEFINE_GLOBAL: iota(),
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),

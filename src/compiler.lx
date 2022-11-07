@@ -153,7 +153,6 @@ mod.compile = fn(src, filename) {
   }
 
   fn makeConstant(value) {
-    // TODO: support more value type
     let constant = addConstant(currentChunk(), value)
     if constant > 256 {
       error("Too many constants in one chunk.")
@@ -245,6 +244,19 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  fn identifierConstant(nameToken) {
+    makeConstant(ObjectString(nameToken.lexeme))
+  }
+
+  fn parseVariable(errorMessage) {
+    consume(TOKEN.IDENTIFIER, errorMessage)
+    identifierConstant(parser.previous)
+  }
+
+  fn defineVariable(global, line) {
+    emitBytes(OP.DEFINE_GLOBAL, global, line)
+  }
+
   fn endCompiler() {
     emitReturn()
   }
@@ -302,6 +314,18 @@ mod.compile = fn(src, filename) {
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
+  fn letExpression() {
+    let line = parser.current.line
+    let global = parseVariable("Expect variable name.")
+    if match(TOKEN.EQUAL) {
+      expression()
+    } else {
+      emiteByte(OP.NIL, line)
+    }
+    defineVariable(global, line)
+    emitBytes(OP.CONSTANT, global, line)
+  }
+
   fn synchronize() {
     parser.panicMode = false
     for parser.current.type != TOKEN.EOF {
@@ -323,7 +347,12 @@ mod.compile = fn(src, filename) {
 
   fn expressionStatement() {
     let line = parser.current.line
-    expression()
+
+    if match(TOKEN.LET) {
+      letExpression()
+    } else {
+      expression()
+    }
 
     if parser.panicMode {
       synchronize()
@@ -353,6 +382,16 @@ mod.compile = fn(src, filename) {
   fn string() {
     let line = parser.previous.line
     emitConstant(ObjectString(parser.previous.literal), line)
+  }
+
+  fn namedVariable(nameToken) {
+    let line = parser.current.line
+    let nameConstIndex = identifierConstant(nameToken)
+    emitBytes(OP.GET_GLOBAL, nameConstIndex, line)
+  }
+
+  fn variable() {
+    namedVariable(parser.previous)
   }
 
   fn unary() {
@@ -397,7 +436,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.GREATER_EQUAL] : [nil,      binary, PREC.COMPARISON],
     [TOKEN.LESS]          : [nil,      binary, PREC.COMPARISON],
     [TOKEN.LESS_EQUAL]    : [nil,      binary, PREC.COMPARISON],
-    [TOKEN.IDENTIFIER]    : [nil,      nil,    PREC.NONE],
+    [TOKEN.IDENTIFIER]    : [variable, nil,    PREC.NONE],
     [TOKEN.STRING]        : [string,   nil,    PREC.NONE],
     [TOKEN.NUMBER]        : [number    nil,    PREC.NONE],
     [TOKEN.AND]           : [nil,      nil,    PREC.NONE],

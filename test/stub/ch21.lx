@@ -1,0 +1,4 @@
+let beverage = "cafe au lait"
+let breakfast = "beignets with " + beverage
+breakfast
+
