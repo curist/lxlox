@@ -561,28 +561,6 @@ mod.compile = fn(src, filename) {
     patchJump(endJump)
   }
 
-  fn forCond() {
-    // helper to parse after `for init;` part,
-    // we start to parse for optional `cond` part
-    let exitJump = -1
-    if !match(TOKEN.SEMICOLON) {
-      // yes, there's a cond part
-      hasCondPart = true
-      expression()
-
-      exitJump = emitJump(OP.JUMP_IF_FALSE)
-      emitByte(OP.POP, parser.previous.line)
-      emitByte(OP.POP, parser.previous.line)
-    }
-    consume(TOKEN.SEMICOLON, "Expect ';' after loop condition.")
-    return exitJump
-  }
-
-  fn forIter() {
-    // helper to parse after `for init;cond;` part,
-    // we start to parse for optional `iter` part
-  }
-
   fn forExpr() {
     beginScope()
 
@@ -595,10 +573,37 @@ mod.compile = fn(src, filename) {
     let loopStartLine = parser.previous.line
 
     let exitJump = -1
+
+    fn forCond() {
+      // helper to parse after `for init;` part,
+      // we start to parse for optional `cond` part
+      if !match(TOKEN.SEMICOLON) {
+        // has cond part
+        expression()
+
+        exitJump = emitJump(OP.JUMP_IF_FALSE)
+        emitByte(OP.POP, parser.previous.line)
+        emitByte(OP.POP, parser.previous.line)
+      }
+      consume(TOKEN.SEMICOLON, "Expect ';' after loop condition.")
+
+      // start to parse iter part
+      if !check(TOKEN.LEFT_BRACE) {
+        // has iter part
+        let bodyJump = emitJump(OP.JUMP)
+        let incrementStart = len(currentChunk().bytecode)
+        expression()
+        emitByte(OP.POP, parser.previous.line)
+        emitLoop(loopStart, parser.previous.line)
+        loopStart = incrementStart
+        patchJump(bodyJump)
+      }
+    }
+
     if match(TOKEN.SEMICOLON) {
       // is a `for;;` without initializer
       // condition expression
-      exitJump = forCond()
+      forCond()
     } else {
       // could be a `for cond {}` or `for init;;{}`
       // we want to point loopStart right before cond only
@@ -616,7 +621,7 @@ mod.compile = fn(src, filename) {
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
 
-        exitJump = forCond()
+        forCond()
       }
     }
 
