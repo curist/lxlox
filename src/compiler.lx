@@ -385,7 +385,7 @@ mod.compile = fn(src, filename) {
     compiler.scopeDepth = compiler.scopeDepth + 1
   }
 
-  fn endScope(preserveLast) {
+  fn endScope() {
     compiler.scopeDepth = compiler.scopeDepth - 1
 
     fn shouldPop() {
@@ -393,19 +393,10 @@ mod.compile = fn(src, filename) {
         compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth
     }
 
-    fn canPopNext() {
-      compiler.localCount > 1 and
-        compiler.locals[compiler.localCount - 2].depth > compiler.scopeDepth
-    }
-
     for shouldPop() {
-      if !preserveLast or canPopNext() {
-        // TODO: implement ch 22.3 OP_POPN
-        emitByte(OP.POP, parser.previous.line)
-        compiler.localCount = compiler.localCount - 1
-      } else {
-        break
-      }
+      // TODO: implement ch 22.3 OP_POPN
+      emitByte(OP.POP, parser.previous.line)
+      compiler.localCount = compiler.localCount - 1
     }
   }
 
@@ -493,7 +484,9 @@ mod.compile = fn(src, filename) {
   }
 
   fn block() {
+    let hasExpression = false
     for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+      hasExpression = true
       let line = parser.current.line
       expression()
 
@@ -504,13 +497,19 @@ mod.compile = fn(src, filename) {
       }
     }
 
+    if !hasExpression {
+      // XXX: empty block currently eval to nil
+      // should update this when we have hashmap
+      emitByte(OP.NIL, parser.previous.line)
+    }
+
     consume(TOKEN.RIGHT_BRACE, "Expect '}' after block.")
   }
 
   fn blocker() {
     beginScope()
     block()
-    endScope(false)
+    endScope()
   }
 
   fn ifExpr() {
@@ -576,12 +575,13 @@ mod.compile = fn(src, filename) {
 
   fn forExpr() {
     beginScope()
-
-    // reserved a local for block return value
-    emitByte(OP.NIL, parser.previous.line)
-    addLocal({ lexeme: "" })
-    markInitialized()
-    let blockLocal = compiler.localCount - 1
+    defer {
+      endScope()
+      // XXX: let for loop resolves to nil for now
+      // let's revisit how to properly return value
+      // once we know how function can return value
+      emitByte(OP.NIL, parser.previous.line)
+    }
 
 
     let loopStart = len(currentChunk().bytecode)
@@ -640,7 +640,6 @@ mod.compile = fn(src, filename) {
 
     consume(TOKEN.LEFT_BRACE, "Expect '{' for block.")
     blocker()
-    emitBytes(OP.SET_LOCAL, blockLocal, parser.previous.line)
     emitByte(OP.POP, parser.previous.line)
     emitLoop(loopStart, loopStartLine)
 
@@ -648,9 +647,6 @@ mod.compile = fn(src, filename) {
       patchJump(exitJump)
       emitByte(OP.POP, parser.previous.line)
     }
-    endScope(true)
-    emitByte(OP.DUP, parser.previous.line)
-    endScope(false)
   }
 
   fn string(canAssign) {
