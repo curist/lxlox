@@ -691,6 +691,8 @@ mod.compile = fn(src, filename) {
     let breaker = breakers[len(breakers) - 1]
     let jump = emitJump(OP.JUMP)
     breakers[len(breakers) - 1] = append(breaker, jump)
+    // TODO: optionally break with value
+    // TODO: how do we make sure break is the last expr in current branch?
   }
 
   fn string(canAssign) {
