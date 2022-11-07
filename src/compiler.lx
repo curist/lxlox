@@ -561,25 +561,69 @@ mod.compile = fn(src, filename) {
     patchJump(endJump)
   }
 
+  fn forCond() {
+    // helper to parse after `for init;` part,
+    // we start to parse for optional `cond` part
+    let exitJump = -1
+    if !match(TOKEN.SEMICOLON) {
+      // yes, there's a cond part
+      hasCondPart = true
+      expression()
+
+      exitJump = emitJump(OP.JUMP_IF_FALSE)
+      emitByte(OP.POP, parser.previous.line)
+      emitByte(OP.POP, parser.previous.line)
+    }
+    consume(TOKEN.SEMICOLON, "Expect ';' after loop condition.")
+    return exitJump
+  }
+
   fn forExpr() {
+    beginScope()
+
+    // we want to insert a nil right before the loop
+    // so, at the start of a loop, we can pop up last
+    // evaluated block result
     emitByte(OP.NIL, parser.previous.line)
 
     let loopStart = len(currentChunk().bytecode)
     let loopStartLine = parser.previous.line
 
-    expression()
-    // TODO: support `for ; {}` & `for ;; {}`
+    let exitJump = -1
+    if match(TOKEN.SEMICOLON) {
+      // is a `for;;` without initializer
+      // condition expression
+      exitJump = forCond()
+    } else {
+      // could be a `for cond {}` or `for init;;{}`
+      // we want to point loopStart right before cond only
+      expression()
+      if !match(TOKEN.SEMICOLON) {
+        // is `for cond {}` while loop
+        // so above expression is treated as term cond
+        // we don't need to update loopStart
+        exitJump = emitJump(OP.JUMP_IF_FALSE)
+        emitByte(OP.POP, parser.previous.line)
+        emitByte(OP.POP, parser.previous.line)
+      } else {
+        // is `for init;cond; {}`, update loopStart
+        loopStart = len(currentChunk().bytecode)
+        loopStartLine = parser.previous.line
 
-    let exitJump = emitJump(OP.JUMP_IF_FALSE)
-    emitByte(OP.POP, parser.previous.line)
-    emitByte(OP.POP, parser.previous.line)
+        exitJump = forCond()
+      }
+    }
 
     consume(TOKEN.LEFT_BRACE, "Expect '{' for block.")
     blocker()
     emitLoop(loopStart, loopStartLine)
 
-    patchJump(exitJump)
-    emitByte(OP.POP, parser.previous.line)
+    if exitJump != -1 {
+      patchJump(exitJump)
+      emitByte(OP.POP, parser.previous.line)
+    }
+
+    endScope()
   }
 
   fn string(canAssign) {
