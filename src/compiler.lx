@@ -356,6 +356,15 @@ mod.compile = fn(src, filename) {
     emitBytes(OP.DEFINE_GLOBAL, global, line)
   }
 
+  fn and_(canAssign) {
+    let endJump = emitJump(OP.JUMP_IF_FALSE)
+
+    emitByte(OP.POP, parser.previous.line)
+    parsePrecedence(PREC.AND)
+
+    patchJump(endJump)
+  }
+
   fn endCompiler() {
     emitReturn()
   }
@@ -529,6 +538,17 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  fn or_(canAssign) {
+    let line = parser.previous.line
+    let elseJump = emitJump(OP.JUMP_IF_FALSE, line)
+    let endJump = emitJump(OP.JUMP, line)
+    patchJump(elseJump)
+    emitByte(OP.POP, line)
+
+    parsePrecedence(PREC.OR)
+    patchJump(endJump)
+  }
+
   fn string(canAssign) {
     let line = parser.previous.line
     emitConstant(ObjectString(parser.previous.literal), line)
@@ -608,14 +628,14 @@ mod.compile = fn(src, filename) {
     [TOKEN.IDENTIFIER]    : [variable,      nil,    PREC.NONE],
     [TOKEN.STRING]        : [string,        nil,    PREC.NONE],
     [TOKEN.NUMBER]        : [number         nil,    PREC.NONE],
-    [TOKEN.AND]           : [nil,           nil,    PREC.NONE],
+    [TOKEN.AND]           : [nil,           and_,   PREC.AND],
     [TOKEN.ELSE]          : [nil,           nil,    PREC.NONE],
     [TOKEN.FALSE]         : [literal,       nil,    PREC.NONE],
     [TOKEN.FOR]           : [nil,           nil,    PREC.NONE],
     [TOKEN.FN]            : [nil,           nil,    PREC.NONE],
     [TOKEN.IF]            : [ifExpr,        nil,    PREC.NONE],
     [TOKEN.NIL]           : [literal,       nil,    PREC.NONE],
-    [TOKEN.OR]            : [nil,           nil,    PREC.NONE],
+    [TOKEN.OR]            : [nil,           or_,    PREC.OR],
     [TOKEN.DEFER]         : [nil,           nil,    PREC.NONE],
     [TOKEN.RETURN]        : [nil,           nil,    PREC.NONE],
     [TOKEN.BREAK]         : [nil,           nil,    PREC.NONE],
