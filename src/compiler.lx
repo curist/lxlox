@@ -110,6 +110,7 @@ mod.compile = fn(src, filename) {
   }
 
   let breakers = []
+  let continueOffsets = []
 
   let compiler = Compiler(0)
 
@@ -575,17 +576,6 @@ mod.compile = fn(src, filename) {
     patchJump(endJump)
   }
 
-  fn popBreakers() {
-    // dumb way to do pop, but anyway...
-    // we can revisit this when we decide how to do array pop
-    let size = len(breakers)
-    let newBreakers = []
-    for let i = 0; i < size - 1; i = i + 1 {
-      newBreakers = append(newBreakers, breakers[i])
-    }
-    breakers = newBreakers
-  }
-
   fn patchBreakers() {
     let chunk = currentChunk()
     let breaker = breakers[len(breakers) - 1]
@@ -608,7 +598,7 @@ mod.compile = fn(src, filename) {
     beginScope()
     breakers = append(breakers, [])
     defer {
-      popBreakers()
+      breakers = lib.butlast(breakers)
       endScope()
       // XXX: let for loop resolves to nil for now
       // let's revisit how to properly return value
@@ -693,6 +683,13 @@ mod.compile = fn(src, filename) {
     breakers[len(breakers) - 1] = append(breaker, jump)
     // TODO: optionally break with value
     // TODO: how do we make sure break is the last expr in current branch?
+  }
+
+  fn continueExpr() {
+    if len(continueOffsets) == 0 {
+      error("Can only break inside a loop.")
+      return
+    }
   }
 
   fn string(canAssign) {
@@ -785,6 +782,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.DEFER]         : [nil,           nil,    PREC.NONE],
     [TOKEN.RETURN]        : [nil,           nil,    PREC.NONE],
     [TOKEN.BREAK]         : [breakExpr,     nil,    PREC.NONE],
+    [TOKEN.CONTINUE]      : [continueExpr,  nil,    PREC.NONE],
     [TOKEN.TRUE]          : [literal,       nil,    PREC.NONE],
     [TOKEN.ERROR]         : [nil,           nil,    PREC.NONE],
     [TOKEN.EOF]           : [nil,           nil,    PREC.NONE],

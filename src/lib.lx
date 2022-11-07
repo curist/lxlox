@@ -14,6 +14,9 @@ let lib = {
     //   or leave the implementation in an Math module
     Lx.parseFloat(s)
   },
+  butlast: fn(arr) {
+    Lx.butlast(arr)
+  },
   iota: fn (start) {
     let i = start - 1
     fn() { i = i + 1 }
