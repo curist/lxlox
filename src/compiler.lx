@@ -128,6 +128,8 @@ mod.compile = fn(src, filename) {
 
   let compiler = Compiler(FunctionType.SCRIPT)
   compiler.function = Function("", 0, Chunk(filename))
+  // compiler.locals = append(compiler.locals, Local("", 0))
+  // compiler.localCount = compiler.localCount + 1
 
   fn currentChunk() {
     compiler.function.chunk
@@ -868,7 +870,7 @@ mod.compile = fn(src, filename) {
 
   return {
     success: !parser.hadError,
-    chunks: [compiler.function.chunk],
+    function: compiler.function,
   }
 }
 
