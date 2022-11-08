@@ -126,13 +126,20 @@ mod.compile = fn(src, filename) {
   let breakOffsets = []
   let continueOffsets = []
 
-  let compiler = Compiler(FunctionType.SCRIPT)
-  compiler.function = Function("", 0, Chunk(filename))
-  compiler.locals = append(compiler.locals, Local("", 0))
-  compiler.localCount = compiler.localCount + 1
+  let current
+  fn initCompiler(type, filename) {
+    let compiler = Compiler(type)
+    compiler.function = Function("", 0, Chunk(filename))
+    compiler.locals = []
+    compiler.localCount = 0
+    current = compiler
+  }
+  initCompiler(FunctionType.SCRIPT, filename)
+  current.locals = append(current.locals, Local("", 0))
+  current.localCount = 1
 
   fn currentChunk() {
-    compiler.function.chunk
+    current.function.chunk
   }
 
   fn emitByte(byte, line) {
@@ -325,24 +332,24 @@ mod.compile = fn(src, filename) {
   }
 
   fn addLocal(name) {
-    if compiler.localCount >= 256 {
+    if current.localCount >= 256 {
       error("Too many local variables in function.")
       return
     }
-    compiler.locals = append(compiler.locals, Local(name, -1))
-    compiler.localCount = compiler.localCount + 1
+    current.locals = append(current.locals, Local(name, -1))
+    current.localCount = current.localCount + 1
   }
 
   fn declareVariable() {
-    if compiler.scopeDepth == 0 {
+    if current.scopeDepth == 0 {
       return
     }
 
     let name = parser.previous.lexeme
 
-    for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
-      let local = compiler.locals[i]
-      if local.depth != -1 and local.depth < compiler.scopeDepth {
+    for let i = current.localCount - 1; i >= 0; i = i - 1 {
+      let local = current.locals[i]
+      if local.depth != -1 and local.depth < current.scopeDepth {
         break
       }
 
@@ -358,7 +365,7 @@ mod.compile = fn(src, filename) {
     consume(TOKEN.IDENTIFIER, errorMessage)
 
     declareVariable()
-    if compiler.scopeDepth > 0 {
+    if current.scopeDepth > 0 {
       return 0
     }
 
@@ -366,14 +373,14 @@ mod.compile = fn(src, filename) {
   }
 
   fn markInitialized() {
-    if compiler.scopeDepth == 0 {
+    if current.scopeDepth == 0 {
       return
     }
-    compiler.locals[compiler.localCount - 1].depth = compiler.scopeDepth
+    current.locals[current.localCount - 1].depth = current.scopeDepth
   }
 
   fn defineVariable(global, line) {
-    if compiler.scopeDepth > 0 {
+    if current.scopeDepth > 0 {
       markInitialized()
       return
     }
@@ -390,25 +397,25 @@ mod.compile = fn(src, filename) {
 
   fn endCompiler() {
     emitReturn()
-    return compiler.function
+    return current.function
   }
 
   fn beginScope() {
-    compiler.scopeDepth = compiler.scopeDepth + 1
+    current.scopeDepth = current.scopeDepth + 1
   }
 
   fn endScope() {
-    compiler.scopeDepth = compiler.scopeDepth - 1
+    current.scopeDepth = current.scopeDepth - 1
 
     fn shouldPop() {
-      compiler.localCount > 0 and
-        compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth
+      current.localCount > 0 and
+        current.locals[current.localCount - 1].depth > current.scopeDepth
     }
 
     let totalPops = 0
     for shouldPop() {
       totalPops = totalPops + 1
-      compiler.localCount = compiler.localCount - 1
+      current.localCount = current.localCount - 1
     }
 
     if totalPops == 1 {
@@ -420,18 +427,18 @@ mod.compile = fn(src, filename) {
 
   fn resetScopeVariables(n) {
     // emit right amount of pops
-    let localCount = compiler.localCount
-    defer compiler.localCount = localCount
+    let localCount = current.localCount
+    defer current.localCount = localCount
 
     fn shouldPop() {
-      compiler.localCount > 0 and
-        compiler.locals[compiler.localCount - 1].depth > n
+      current.localCount > 0 and
+        current.locals[current.localCount - 1].depth > n
     }
 
     let totalPops = 0
     for shouldPop() {
       totalPops = totalPops + 1
-      compiler.localCount = compiler.localCount - 1
+      current.localCount = current.localCount - 1
     }
 
     if totalPops == 1 {
@@ -667,7 +674,7 @@ mod.compile = fn(src, filename) {
     beginScope()
 
     let prevScopeDepth = loopScopeDepth
-    loopScopeDepth = compiler.scopeDepth
+    loopScopeDepth = current.scopeDepth
 
     breakOffsets = append(breakOffsets, [])
     continueOffsets = append(continueOffsets, [])
@@ -788,7 +795,7 @@ mod.compile = fn(src, filename) {
 
     let getOp
     let setOp
-    let arg = resolveLocal(compiler, name)
+    let arg = resolveLocal(current, name)
 
     if arg != -1 {
       getOp = OP.GET_LOCAL
@@ -892,7 +899,7 @@ mod.compile = fn(src, filename) {
 
   return {
     success: !parser.hadError,
-    function: compiler.function,
+    function: current.function,
   }
 }
 
