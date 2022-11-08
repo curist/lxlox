@@ -64,6 +64,7 @@ fn Local(name, depth) {{
 }}
 
 fn Compiler(type) {{
+  enclosing: nil,
   locals: [],
   localCount: 0,
   scopeDepth: 0,
@@ -129,6 +130,7 @@ mod.compile = fn(src, filename) {
   let current
   fn initCompiler(type, filename) {
     let compiler = Compiler(type)
+    compiler.enclosing = current
     compiler.function = Function("", 0, Chunk(filename))
     compiler.locals = []
     compiler.localCount = 0
@@ -397,7 +399,9 @@ mod.compile = fn(src, filename) {
 
   fn endCompiler() {
     emitReturn()
-    return current.function
+    let function = current.function
+    current = current.enclosing
+    return function
   }
 
   fn beginScope() {
@@ -895,11 +899,11 @@ mod.compile = fn(src, filename) {
     expressionStatement()
   }
   consume(TOKEN.EOF, "Expect end of expression.")
-  endCompiler()
+  let func = endCompiler()
 
   return {
     success: !parser.hadError,
-    function: current.function,
+    function: func,
   }
 }
 
