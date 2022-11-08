@@ -128,8 +128,8 @@ mod.compile = fn(src, filename) {
 
   let compiler = Compiler(FunctionType.SCRIPT)
   compiler.function = Function("", 0, Chunk(filename))
-  // compiler.locals = append(compiler.locals, Local("", 0))
-  // compiler.localCount = compiler.localCount + 1
+  compiler.locals = append(compiler.locals, Local("", 0))
+  compiler.localCount = compiler.localCount + 1
 
   fn currentChunk() {
     compiler.function.chunk
