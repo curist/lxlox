@@ -391,10 +391,16 @@ mod.compile = fn(src, filename) {
         compiler.locals[compiler.localCount - 1].depth > compiler.scopeDepth
     }
 
+    let totalPops = 0
     for shouldPop() {
-      // TODO: implement ch 22.3 OP_POPN
-      emitByte(OP.POP, parser.previous.line)
+      totalPops = totalPops + 1
       compiler.localCount = compiler.localCount - 1
+    }
+
+    if totalPops == 1 {
+      emitByte(OP.POP, parser.previous.line)
+    } else if totalPops > 1 {
+      emitBytes(OP.POPN, totalPops, parser.previous.line)
     }
   }
 
@@ -678,9 +684,9 @@ mod.compile = fn(src, filename) {
 
     if exitJump != -1 {
       patchJump(exitJump)
-      patchBreaks()
-      patchContinues()
       emitByte(OP.POP, parser.previous.line)
+      // patchBreaks()
+      // patchContinues()
     }
   }
 
