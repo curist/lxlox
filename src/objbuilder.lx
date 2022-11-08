@@ -18,19 +18,28 @@ let ObjType = object.ObjType
 // obj layout
 // LX:        2
 // VERSION:   1
-// FLAGS:     1 , 8 bits, TBD, could indicate if this is a debug release or not?
+// FLAGS:     1 , 8 bits
+//     0000 0001 -> debug
 // OBJSIZE:   4 little endian
-// TBD:       16 - (2+1+1+4) = 8
+// CHUNKS:    2 little endian -> we can have up to 65536 chunks
+// TBD:       16 - (2+1+1+4+2) = 6
+// CHUNKADDR: 4 little endian, each
+// # chunk layout
 // CODE_SECTION: ?
 //      SIZE: 4 little endian
-//      CODE: vary length
+//      CODE: various length
 //            CODE_SECTION guaranteed to be followed by 5 bytes of CONST_SECTION header
 // CONST_SECTION: follow right after a CODE_SECTION
 //      SIZE: 4  let's leave size here, so it's possible for us to jump to next chunk
 //      CONST_COUNT: 1
 //   every const is like
 //      TYPE:  1
-//      VALUE: vary length
+//      VALUE: 1 bit type + type dependent layout(length)
+//        BOOL:   1 + 1
+//        NIL:    1
+//        NUMBER: 1 + 8 (double)
+//        OBJ:    1 + 1 (obj type) + obj type dependent layout(length)
+//          STRING: 4 little endian size + actual string
 // DEBUG_SECTION:
 //      SIZE: 4 little endian
 //      FILEPATH_LENGTH: 2 file path length
@@ -86,9 +95,9 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-fn objbuilder(chunks, debug) {
+fn objbuilder(function, debug) {
   // XXX: handling only 1 chunk for now
-  let chunk = chunks[0]
+  let chunk = function.chunk
   let obj = []
 
   let flags = setFlags({
@@ -130,13 +139,14 @@ fn objbuilder(chunks, debug) {
         constants = concat(constants, double)
       },
       [ValueType.OBJ]: fn(val) {
+        lib.prettyprint(val)
         let handler = objTypeHandlers[val.kind]
         if handler {
           constants = append(constants, lib.tohex(val.kind))
           handler(val.value)
         } else {
           // should be unreachable
-          print("Invalid obj handler type: " + str(value.kind))
+          print("Invalid obj handler type: " + str(val.kind))
           Lx.exit(55)
         }
       },

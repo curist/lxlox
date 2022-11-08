@@ -1,0 +1,6 @@
+fn what() {
+  fn oh() { "oh..." }
+  123
+}
+
+what

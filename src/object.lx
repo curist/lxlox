@@ -9,6 +9,10 @@ mod.Object = fn(kind, value) {{
   value: value,
 }}
 
+mod.ObjectFunction = fn(function) {
+  mod.Object(mod.ObjType.FUNCTION, function)
+}
+
 mod.ObjectString = fn(string) {
   mod.Object(mod.ObjType.STRING, string)
 }
