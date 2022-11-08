@@ -642,10 +642,15 @@ mod.compile = fn(src, filename) {
     continueOffsets = append(continueOffsets, [])
 
     defer {
+      endScope()
+      // break jump to where after loop cleanup
+      // since we want to let break do their own POPN
+      patchBreaks()
+
       loopScopeDepth = prevScopeDepth
       breakOffsets = lib.butlast(breakOffsets)
       continueOffsets = lib.butlast(continueOffsets)
-      endScope()
+
       // XXX: let for loop resolves to nil for now
       // let's revisit how to properly return value
       // once we know how function can return value
@@ -710,7 +715,6 @@ mod.compile = fn(src, filename) {
     emitByte(OP.POP, parser.previous.line)
 
     patchContinues()
-    patchBreaks()
 
     emitLoop(loopStart, loopStartLine)
 
@@ -724,6 +728,7 @@ mod.compile = fn(src, filename) {
       error("Can only break inside a loop.")
       return
     }
+    resetScopeVariables(loopScopeDepth - 1)
     let breaker = breakOffsets[len(breakOffsets) - 1]
     let jump = emitJump(OP.JUMP)
     breakOffsets[len(breakOffsets) - 1] = append(breaker, jump)
@@ -736,10 +741,8 @@ mod.compile = fn(src, filename) {
       error("Can only continue inside a loop.")
       return
     }
-    let continues = continueOffsets[len(continueOffsets) - 1]
-
     resetScopeVariables(loopScopeDepth)
-
+    let continues = continueOffsets[len(continueOffsets) - 1]
     let jump = emitJump(OP.JUMP)
     continueOffsets[len(continueOffsets) - 1] = append(continues, jump)
   }

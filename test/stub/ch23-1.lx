@@ -13,7 +13,7 @@ for let i = 0; i < 3; i = i + 1 {
     let foo = x + y + z
 
     if j >= 3 {
-      continue
+      break
     }
 
     total = total + 1
