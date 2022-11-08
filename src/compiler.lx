@@ -105,6 +105,7 @@ mod.compile = fn(src, filename) {
     panicMode: false,
   }
 
+  let loopScopeDepth = 0
   let breakOffsets = []
   let continueOffsets = []
 
@@ -404,6 +405,29 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  fn resetScopeVariables(n) {
+    // emit right amount of pops
+    let localCount = compiler.localCount
+    defer compiler.localCount = localCount
+
+    fn shouldPop() {
+      compiler.localCount > 0 and
+        compiler.locals[compiler.localCount - 1].depth > n
+    }
+
+    let totalPops = 0
+    for shouldPop() {
+      totalPops = totalPops + 1
+      compiler.localCount = compiler.localCount - 1
+    }
+
+    if totalPops == 1 {
+      emitByte(OP.POP, parser.previous.line)
+    } else if totalPops > 1 {
+      emitBytes(OP.POPN, totalPops, parser.previous.line)
+    }
+  }
+
   fn binary(canAssign) {
     let operatorType = parser.previous.type
     let line = parser.previous.line
@@ -610,9 +634,15 @@ mod.compile = fn(src, filename) {
 
   fn forExpr() {
     beginScope()
+
+    let prevScopeDepth = loopScopeDepth
+    loopScopeDepth = compiler.scopeDepth
+
     breakOffsets = append(breakOffsets, [])
     continueOffsets = append(continueOffsets, [])
+
     defer {
+      loopScopeDepth = prevScopeDepth
       breakOffsets = lib.butlast(breakOffsets)
       continueOffsets = lib.butlast(continueOffsets)
       endScope()
@@ -678,12 +708,14 @@ mod.compile = fn(src, filename) {
     consume(TOKEN.LEFT_BRACE, "Expect '{' for block.")
     blocker()
     emitByte(OP.POP, parser.previous.line)
+
+    patchContinues()
+    patchBreaks()
+
     emitLoop(loopStart, loopStartLine)
 
     if exitJump != -1 {
       patchJump(exitJump)
-      // patchBreaks()
-      // patchContinues()
     }
   }
 
@@ -705,6 +737,9 @@ mod.compile = fn(src, filename) {
       return
     }
     let continues = continueOffsets[len(continueOffsets) - 1]
+
+    resetScopeVariables(loopScopeDepth)
+
     let jump = emitJump(OP.JUMP)
     continueOffsets[len(continueOffsets) - 1] = append(continues, jump)
   }

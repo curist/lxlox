@@ -1,10 +1,24 @@
 let total = 0
 for let i = 0; i < 3; i = i + 1 {
-  for let j = 0; j < 3; j = j + 1 {
+  for let j = 0; j < 20; j = j + 1 {
     let x = 10
     let y = x
     let z = x + y
+    z = z * 3
+
+    if j > 6 {
+      continue
+    }
+
+    let foo = x + y + z
+
+    if j >= 3 {
+      continue
+    }
+
     total = total + 1
+
+    let bar = foo * z
   }
 }
 
