@@ -1,11 +1,11 @@
 .PHONY: main test
 
 # can't parse src/main.lx yet :)
-TARGET = test/stub/ch23-1.lx
+TARGET = test/stub/ch23.lx
 
 main:
+	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
 	lx.ts src/main.lx $(TARGET)
-	lx.ts src/main.lx --debug $(TARGET)
 
 test:
 	@ls test/*.test.lx | xargs -I{} sh -c "echo {} && lx.ts {}"

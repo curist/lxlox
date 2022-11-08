@@ -87,10 +87,6 @@ mod.debugPrint = fn(src) {
 mod.compile = fn(src, filename) {
   let scanner = initScanner(src)
 
-  // XXX: future
-  // TODO: put line info as debug info, as part of the bin format
-  let line = -1
-
   // to get around mutual references
   let parseRules
   let getRule
@@ -372,11 +368,10 @@ mod.compile = fn(src, filename) {
   }
 
   fn and_(canAssign) {
+    emitByte(OP.DUP, parser.previous.line)
     let endJump = emitJump(OP.JUMP_IF_FALSE)
-
     emitByte(OP.POP, parser.previous.line)
     parsePrecedence(PREC.AND)
-
     patchJump(endJump)
   }
 
@@ -521,14 +516,12 @@ mod.compile = fn(src, filename) {
     consume(TOKEN.LEFT_BRACE, "Expect '{' after condition.")
 
     let thenJump = emitJump(OP.JUMP_IF_FALSE)
-    emitByte(OP.POP, parser.previous.line)
     blocker()
 
     let elseJump = emitJump(OP.JUMP)
 
     patchJump(thenJump)
 
-    emitByte(OP.POP, parser.previous.line)
     if match(TOKEN.ELSE) {
       expression()
     } else {
@@ -566,12 +559,9 @@ mod.compile = fn(src, filename) {
   }
 
   fn or_(canAssign) {
-    let line = parser.previous.line
-    let elseJump = emitJump(OP.JUMP_IF_FALSE, line)
-    let endJump = emitJump(OP.JUMP, line)
-    patchJump(elseJump)
-    emitByte(OP.POP, line)
-
+    emitByte(OP.DUP, parser.previous.line)
+    let endJump = emitJump(OP.JUMP_IF_TRUE)
+    emitByte(OP.POP, parser.previous.line)
     parsePrecedence(PREC.OR)
     patchJump(endJump)
   }
@@ -688,9 +678,9 @@ mod.compile = fn(src, filename) {
 
     if exitJump != -1 {
       patchJump(exitJump)
-      emitByte(OP.POP, parser.previous.line)
       patchBreaks()
       patchContinues()
+      emitByte(OP.POP, parser.previous.line)
     }
   }
 
