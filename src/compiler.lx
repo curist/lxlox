@@ -31,20 +31,44 @@ let PREC = {
   }
 }
 
+let FunctionType = {
+  let iota = lib.iota(0)
+  {
+    FUNCTION: iota(),
+    SCRIPT:   iota(),
+  }
+}
+
 fn Value(kind, value) {{
   kind: kind,
   value: value,
 }}
 
-fn Local(tokenName, depth) {{
-  name: tokenName,
+fn Chunk(filename) {{
+  filename: filename,
+  bytecode: [],
+  constants: [],
+  lines: [],
+}}
+
+fn Function(name, arity, chunk) {{
+  name: name,
+  arity: arity,
+  chunk: chunk,
+}}
+
+
+fn Local(name, depth) {{
+  name: name,
   depth: depth,
 }}
 
-fn Compiler(depth) {{
+fn Compiler(type) {{
   locals: [],
   localCount: 0,
-  scopeDepth: depth,
+  scopeDepth: 0,
+  function: nil,
+  type: type,
 }}
 
 fn BOOL_VAL(value)   { Value(ValueType.BOOL, value) }
@@ -91,13 +115,6 @@ mod.compile = fn(src, filename) {
   let parseRules
   let getRule
 
-  let chunks = [{
-    filename: filename,
-    bytecode: [],
-    constants: [],
-    lines: [],
-  }]
-
   let parser = {
     current: 0,
     previous: 0,
@@ -109,19 +126,11 @@ mod.compile = fn(src, filename) {
   let breakOffsets = []
   let continueOffsets = []
 
-  let compiler = Compiler(0)
+  let compiler = Compiler(FunctionType.SCRIPT)
+  compiler.function = Function("", 0, Chunk(filename))
 
   fn currentChunk() {
-    // XXX: probably will need to change this later
-    // Right now, the chunk pointer is stored in a module-level variable,
-    // like we store other global state.
-    // Later, when we start compiling user-defined functions,
-    // the notion of “current chunk” gets more complicated.
-    // To avoid having to go back and change a lot of code,
-    // I encapsulate that logic in the currentChunk() function.
-    // ^ from book text
-    // https://craftinginterpreters.com/compiling-expressions.html#emitting-bytecode
-    chunks[len(chunks) - 1]
+    compiler.function.chunk
   }
 
   fn emitByte(byte, line) {
@@ -294,13 +303,11 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn identifierConstant(nameToken) {
-    makeConstant(ObjectString(nameToken.lexeme))
+  fn identifierConstant(name) {
+    makeConstant(ObjectString(name))
   }
 
-  fn identifiersEqual(nameTokenA, nameTokenB) {
-    nameTokenA.lexeme == nameTokenB.lexeme
-  }
+  fn identifiersEqual(nameA, nameB) { nameA == nameB }
 
   fn resolveLocal(compiler, name) {
     for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
@@ -329,7 +336,7 @@ mod.compile = fn(src, filename) {
       return
     }
 
-    let nameToken = parser.previous
+    let name = parser.previous.lexeme
 
     for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
       let local = compiler.locals[i]
@@ -337,12 +344,12 @@ mod.compile = fn(src, filename) {
         break
       }
 
-      if identifiersEqual(nameToken, local.name) {
+      if identifiersEqual(name, local.name) {
         error("Already a variable with this name in this scope.")
       }
     }
 
-    addLocal(nameToken)
+    addLocal(name)
   }
 
   fn parseVariable(errorMessage) {
@@ -353,7 +360,7 @@ mod.compile = fn(src, filename) {
       return 0
     }
 
-    identifierConstant(parser.previous)
+    identifierConstant(parser.previous.lexeme)
   }
 
   fn markInitialized() {
@@ -752,18 +759,18 @@ mod.compile = fn(src, filename) {
     emitConstant(ObjectString(parser.previous.literal), line)
   }
 
-  fn namedVariable(nameToken, canAssign) {
+  fn namedVariable(name, canAssign) {
     let line = parser.previous.line
 
     let getOp
     let setOp
-    let arg = resolveLocal(compiler, nameToken)
+    let arg = resolveLocal(compiler, name)
 
     if arg != -1 {
       getOp = OP.GET_LOCAL
       setOp = OP.SET_LOCAL
     } else {
-      arg = identifierConstant(nameToken)
+      arg = identifierConstant(name)
       getOp = OP.GET_GLOBAL
       setOp = OP.SET_GLOBAL
     }
@@ -777,7 +784,7 @@ mod.compile = fn(src, filename) {
   }
 
   fn variable(canAssign) {
-    namedVariable(parser.previous, canAssign)
+    namedVariable(parser.previous.lexeme, canAssign)
   }
 
   fn unary(canAssign) {
@@ -861,7 +868,7 @@ mod.compile = fn(src, filename) {
 
   return {
     success: !parser.hadError,
-    chunks: chunks,
+    chunks: [compiler.function.chunk],
   }
 }
 
