@@ -634,9 +634,7 @@ mod.compile = fn(src, filename) {
       if !match(TOKEN.SEMICOLON) {
         // has cond part
         expression()
-
         exitJump = emitJump(OP.JUMP_IF_FALSE)
-        emitByte(OP.POP, parser.previous.line)
       }
       consume(TOKEN.SEMICOLON, "Expect ';' after loop condition.")
 
@@ -666,9 +664,9 @@ mod.compile = fn(src, filename) {
         // so above expression is treated as term cond
         // we don't need to update loopStart
         exitJump = emitJump(OP.JUMP_IF_FALSE)
-        emitByte(OP.POP, parser.previous.line)
       } else {
         // is `for init;cond; {}`, update loopStart
+        // pop off init expression value
         emitByte(OP.POP, parser.previous.line)
         loopStart = len(currentChunk().bytecode)
         loopStartLine = parser.previous.line
@@ -684,7 +682,6 @@ mod.compile = fn(src, filename) {
 
     if exitJump != -1 {
       patchJump(exitJump)
-      emitByte(OP.POP, parser.previous.line)
       // patchBreaks()
       // patchContinues()
     }
