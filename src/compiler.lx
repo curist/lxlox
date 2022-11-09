@@ -288,7 +288,6 @@ mod.compile = fn(src, filename) {
   }
 
   fn emitReturn() {
-    emitByte(OP.NIL, parser.previous.line)
     emitByte(OP.RETURN, parser.previous.line)
   }
 
