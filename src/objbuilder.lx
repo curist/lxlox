@@ -109,6 +109,8 @@ fn buildChunkObj(function, flags) {
   // reserve chunk size
   obj = concat(obj, int32ToBytes(0))
 
+  obj = append(obj, lib.tohex(function.arity))
+
   // chunk name info
   obj = concat(obj, numberToDoubleBytes(len(funcName)))
   obj = concat(obj, stringToBytes(funcName))

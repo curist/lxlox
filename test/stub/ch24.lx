@@ -1,7 +1,7 @@
-fn what() {
-  fn oh() { "oh..." }
+fn a() { b() }
+fn b() { c(1, 2, 3) }
+fn c(a,b) {
   123
 }
 
-what
-
+a()

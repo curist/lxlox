@@ -49,6 +49,7 @@ fn Chunk(filename) {{
   bytecode: [],
   constants: [],
   lines: [],
+  constantsCache: {},
 }}
 
 fn Function(name, arity, chunk) {{
@@ -202,17 +203,12 @@ mod.compile = fn(src, filename) {
     return len(currentChunk().bytecode) - 2
   }
 
-  let constantsCache = {}
-
   fn calcValueKey(value) {
     let k = str(value.kind) + ":"
     if value.kind == ValueType.NUMBER {
       k = k + str(value.value)
     } else if value.kind == ValueType.OBJ {
       let obj = value.value
-      if !obj.kind {
-        return "nocache"
-      }
       k = k + str(obj.kind) + ":"
       if obj.kind == ObjType.STRING {
         k = k + obj.value
@@ -233,11 +229,11 @@ mod.compile = fn(src, filename) {
       chunk.constants = append(chunk.constants, value)
       return len(chunk.constants) - 1
     }
-    let index = constantsCache[k]
+    let index = chunk.constantsCache[k]
     if index { return index }
     chunk.constants = append(chunk.constants, value)
     index = len(chunk.constants) - 1
-    constantsCache[k] = index
+    chunk.constantsCache[k] = index
     return index
   }
 
@@ -292,6 +288,7 @@ mod.compile = fn(src, filename) {
   }
 
   fn emitReturn() {
+    emitByte(OP.NIL, parser.previous.line)
     emitByte(OP.RETURN, parser.previous.line)
   }
 
@@ -377,7 +374,6 @@ mod.compile = fn(src, filename) {
     if current.scopeDepth > 0 {
       return 0
     }
-
     identifierConstant(parser.previous.lexeme)
   }
 
@@ -604,7 +600,7 @@ mod.compile = fn(src, filename) {
           errorAtCurrent("Can't have more than 255 parameters.")
         }
         let constant = parseVariable("Expect parameter name.")
-        defineVariable(constant)
+        defineVariable(constant, parser.previous.line)
       }
 
       parameter()
@@ -614,14 +610,15 @@ mod.compile = fn(src, filename) {
     consume(TOKEN.LEFT_BRACE, "Expect '{' before function body.")
     block()
 
-    let function = endCompiler()
-    emitBytes(OP.CONSTANT, makeConstant(ObjectFunction(function)), parser.previous.line)
+    let func = endCompiler()
+    emitBytes(OP.CONSTANT, makeConstant(ObjectFunction(func)), parser.previous.line)
   }
 
   fn fnExpr() {
     let global = parseVariable("Expect function name.")
     markInitialized()
     function(FunctionType.FUNCTION)
+    emitByte(OP.DUP, parser.previous.line)
     defineVariable(global, parser.previous.line)
   }
 

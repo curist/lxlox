@@ -96,7 +96,7 @@ let lib = {
         let mapkeys = keys(x)
         let s = "{"
         let keyvalues = lib.reduce(mapkeys, [], fn(acc, k) {
-          append(acc, k + ": " + present(x[k]))
+          append(acc, "\"" + k + "\": " + present(x[k]))
         })
         s = s + lib.join(keyvalues, ", ")
         s = s + "}"
