@@ -682,7 +682,7 @@ mod.compile = fn(src, filename) {
   fn number(canAssign) {
     let value = parser.previous.literal
     let line = parser.previous.line
-    if value >= 0 and value < 256 {
+    if value >= 0 and value < 256 and lib.floor(value) == value {
       emitBytes(OP.CONST_BYTE, value, line)
     } else {
       emitConstant(NUMBER_VAL(value), line)
