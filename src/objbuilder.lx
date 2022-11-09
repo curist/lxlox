@@ -25,6 +25,8 @@ let ObjType = object.ObjType
 // TBD:       16 - (2+1+1+4+2) = 6
 // # chunk layout
 // CHUNK_SIZE: 4 little endian
+//   CHUNK_NAME_SIZE: 2 little endian
+//        CHUNK_NAME: string, vary length, aka function name
 // CODE_SECTION: ?
 //      SIZE: 4 little endian
 //      CODE: various length
@@ -40,7 +42,7 @@ let ObjType = object.ObjType
 //        NUMBER: 1 + 8 (double)
 //        OBJ:    1 + 1 (obj type) + obj type dependent layout(length)
 //          STRING:   4 little endian size + actual string
-//          FUNCTION: 2 little endian chunks index
+//          FUNCTION: 0, we rely on the build order to stay the same
 // DEBUG_SECTION:
 //      SIZE: 4 little endian
 //      FILEPATH_LENGTH: 2 file path length
@@ -96,12 +98,20 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-fn buildChunkObj(chunk, chunksCount, flags) {
+fn buildChunkObj(function, flags) {
+  let chunk = function.chunk
+  let funcName = function.name
+
   let obj = []
   let debug = flags.debug
+  let functions = []
 
   // reserve chunk size
   obj = concat(obj, int32ToBytes(0))
+
+  // chunk name info
+  obj = concat(obj, numberToDoubleBytes(len(funcName)))
+  obj = concat(obj, stringToBytes(funcName))
 
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
@@ -110,7 +120,7 @@ fn buildChunkObj(chunk, chunksCount, flags) {
   // save start index, we will update this to actual constants size
   let constSectionStart = len(obj)
   // reserve constants section size
-  obj = concat(obj, int32ToBytes(0))
+  obj = concat(obj, int32ToBytes(1))
 
   let constantsSize = len(chunk.constants)
   obj = append(obj, lib.tohex(constantsSize))
@@ -121,6 +131,9 @@ fn buildChunkObj(chunk, chunksCount, flags) {
       [ObjType.STRING]: fn(value) {
         constants = concat(constants, int32ToBytes(len(value)))
         constants = concat(constants, stringToBytes(value))
+      },
+      [ObjType.FUNCTION]: fn(value) {
+        functions = append(functions, value)
       },
     }
     let constTypeHandlers = {
@@ -185,7 +198,7 @@ fn buildChunkObj(chunk, chunksCount, flags) {
 
   return {
     obj: obj,
-    functions: []
+    functions: functions,
   }
 }
 
@@ -213,7 +226,7 @@ fn dumpObj(obj) {
   print(buffered)
 }
 
-fn objbuilder(function, debug) {
+fn objbuilder(main, debug) {
   let obj = []
 
   let flags = {
@@ -227,9 +240,10 @@ fn objbuilder(function, debug) {
   })
   obj = concat(obj, header)
 
-  let functions = [function]
+  let functions = [main]
   for let i = 0; i < len(functions); i = i + 1 {
-    let chunkObj = buildChunkObj(function.chunk, len(functions), flags)
+    let function = functions[i]
+    let chunkObj = buildChunkObj(function, flags)
     functions = concat(functions, chunkObj.functions)
     obj = concat(obj, chunkObj.obj)
   }
