@@ -104,7 +104,7 @@ mod.debugPrint = fn(src) {
       types.TOKEN_NAME[token.type],
     ])
 
-    if token.type == types.TOKEN.EOF {
+    if token.type == TOKEN.EOF {
       break
     }
   }
@@ -549,8 +549,28 @@ mod.compile = fn(src, filename) {
     }
   }
 
+  fn returnStatement() {
+    if check(TOKEN.RIGHT_BRACE) {
+      emitReturn()
+      return
+    }
+    expression()
+
+    if current.type == FunctionType.SCRIPT {
+      if !check(TOKEN.EOF) {
+        error("Can only return at end of file.")
+      }
+    } else if !check(TOKEN.RIGHT_BRACE) {
+      error("Can only return at end of block.")
+    }
+    emitByte(OP.RETURN, parser.previous.line)
+  }
+
   fn expressionStatement() {
     let line = parser.current.line
+
+    // TODO: handle import
+    // TODO: handle defer
     expression()
 
     if parser.panicMode {
@@ -881,47 +901,47 @@ mod.compile = fn(src, filename) {
   }
 
   parseRules = {
-    [TOKEN.LEFT_PAREN]    : [grouping,      call,   PREC.CALL],
-    [TOKEN.RIGHT_PAREN]   : [nil,           nil,    PREC.NONE],
-    [TOKEN.LEFT_BRACE]    : [blocker,       nil,    PREC.NONE], 
-    [TOKEN.RIGHT_BRACE]   : [nil,           nil,    PREC.NONE],
-    [TOKEN.LEFT_BRACKET]  : [nil,           nil,    PREC.NONE], 
-    [TOKEN.RIGHT_BRACKET] : [nil,           nil,    PREC.NONE],
-    [TOKEN.COMMA]         : [nil,           nil,    PREC.NONE],
-    [TOKEN.DOT]           : [nil,           nil,    PREC.NONE],
-    [TOKEN.MINUS]         : [unary,         binary, PREC.TERM],
-    [TOKEN.PLUS]          : [nil,           binary, PREC.TERM],
-    [TOKEN.SEMICOLON]     : [nil,           nil,    PREC.NONE],
-    [TOKEN.SLASH]         : [nil,           binary, PREC.FACTOR],
-    [TOKEN.STAR]          : [nil,           binary, PREC.FACTOR],
-    [TOKEN.MOD]           : [nil,           binary, PREC.FACTOR],
-    [TOKEN.BANG]          : [unary,         nil,    PREC.NONE],
-    [TOKEN.BANG_EQUAL]    : [nil,           binary, PREC.EQUALITY],
-    [TOKEN.EQUAL]         : [nil,           nil,    PREC.NONE],
-    [TOKEN.EQUAL_EQUAL]   : [nil,           binary, PREC.EQUALITY],
-    [TOKEN.GREATER]       : [nil,           binary, PREC.COMPARISON],
-    [TOKEN.GREATER_EQUAL] : [nil,           binary, PREC.COMPARISON],
-    [TOKEN.LESS]          : [nil,           binary, PREC.COMPARISON],
-    [TOKEN.LESS_EQUAL]    : [nil,           binary, PREC.COMPARISON],
-    [TOKEN.LET]           : [letExpr,       nil,    PREC.NONE],
-    [TOKEN.IDENTIFIER]    : [variable,      nil,    PREC.NONE],
-    [TOKEN.STRING]        : [string,        nil,    PREC.NONE],
-    [TOKEN.NUMBER]        : [number         nil,    PREC.NONE],
-    [TOKEN.AND]           : [nil,           and_,   PREC.AND],
-    [TOKEN.ELSE]          : [nil,           nil,    PREC.NONE],
-    [TOKEN.FALSE]         : [literal,       nil,    PREC.NONE],
-    [TOKEN.FOR]           : [forExpr,       nil,    PREC.NONE],
-    [TOKEN.FN]            : [fnExpr,        nil,    PREC.NONE],
-    [TOKEN.IF]            : [ifExpr,        nil,    PREC.NONE],
-    [TOKEN.NIL]           : [literal,       nil,    PREC.NONE],
-    [TOKEN.OR]            : [nil,           or_,    PREC.OR],
-    [TOKEN.DEFER]         : [nil,           nil,    PREC.NONE],
-    [TOKEN.RETURN]        : [nil,           nil,    PREC.NONE],
-    [TOKEN.BREAK]         : [breakExpr,     nil,    PREC.NONE],
-    [TOKEN.CONTINUE]      : [continueExpr,  nil,    PREC.NONE],
-    [TOKEN.TRUE]          : [literal,       nil,    PREC.NONE],
-    [TOKEN.ERROR]         : [nil,           nil,    PREC.NONE],
-    [TOKEN.EOF]           : [nil,           nil,    PREC.NONE],
+    [TOKEN.LEFT_PAREN]    : [grouping,        call,   PREC.CALL],
+    [TOKEN.RIGHT_PAREN]   : [nil,             nil,    PREC.NONE],
+    [TOKEN.LEFT_BRACE]    : [blocker,         nil,    PREC.NONE], 
+    [TOKEN.RIGHT_BRACE]   : [nil,             nil,    PREC.NONE],
+    [TOKEN.LEFT_BRACKET]  : [nil,             nil,    PREC.NONE], 
+    [TOKEN.RIGHT_BRACKET] : [nil,             nil,    PREC.NONE],
+    [TOKEN.COMMA]         : [nil,             nil,    PREC.NONE],
+    [TOKEN.DOT]           : [nil,             nil,    PREC.NONE],
+    [TOKEN.MINUS]         : [unary,           binary, PREC.TERM],
+    [TOKEN.PLUS]          : [nil,             binary, PREC.TERM],
+    [TOKEN.SEMICOLON]     : [nil,             nil,    PREC.NONE],
+    [TOKEN.SLASH]         : [nil,             binary, PREC.FACTOR],
+    [TOKEN.STAR]          : [nil,             binary, PREC.FACTOR],
+    [TOKEN.MOD]           : [nil,             binary, PREC.FACTOR],
+    [TOKEN.BANG]          : [unary,           nil,    PREC.NONE],
+    [TOKEN.BANG_EQUAL]    : [nil,             binary, PREC.EQUALITY],
+    [TOKEN.EQUAL]         : [nil,             nil,    PREC.NONE],
+    [TOKEN.EQUAL_EQUAL]   : [nil,             binary, PREC.EQUALITY],
+    [TOKEN.GREATER]       : [nil,             binary, PREC.COMPARISON],
+    [TOKEN.GREATER_EQUAL] : [nil,             binary, PREC.COMPARISON],
+    [TOKEN.LESS]          : [nil,             binary, PREC.COMPARISON],
+    [TOKEN.LESS_EQUAL]    : [nil,             binary, PREC.COMPARISON],
+    [TOKEN.LET]           : [letExpr,         nil,    PREC.NONE],
+    [TOKEN.IDENTIFIER]    : [variable,        nil,    PREC.NONE],
+    [TOKEN.STRING]        : [string,          nil,    PREC.NONE],
+    [TOKEN.NUMBER]        : [number           nil,    PREC.NONE],
+    [TOKEN.AND]           : [nil,             and_,   PREC.AND],
+    [TOKEN.ELSE]          : [nil,             nil,    PREC.NONE],
+    [TOKEN.FALSE]         : [literal,         nil,    PREC.NONE],
+    [TOKEN.FOR]           : [forExpr,         nil,    PREC.NONE],
+    [TOKEN.FN]            : [fnExpr,          nil,    PREC.NONE],
+    [TOKEN.IF]            : [ifExpr,          nil,    PREC.NONE],
+    [TOKEN.NIL]           : [literal,         nil,    PREC.NONE],
+    [TOKEN.OR]            : [nil,             or_,    PREC.OR],
+    [TOKEN.DEFER]         : [nil,             nil,    PREC.NONE],
+    [TOKEN.RETURN]        : [returnStatement, nil,    PREC.NONE],
+    [TOKEN.BREAK]         : [breakExpr,       nil,    PREC.NONE],
+    [TOKEN.CONTINUE]      : [continueExpr,    nil,    PREC.NONE],
+    [TOKEN.TRUE]          : [literal,         nil,    PREC.NONE],
+    [TOKEN.ERROR]         : [nil,             nil,    PREC.NONE],
+    [TOKEN.EOF]           : [nil,             nil,    PREC.NONE],
   }
 
   getRule = fn(type) {

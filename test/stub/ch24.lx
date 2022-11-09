@@ -1,7 +1,8 @@
-fn a() { b() }
-fn b() { c(1, 2, 3) }
-fn c(a,b) {
-  123
+fn fib(n) {
+  if n < 2 {
+    return n
+  }
+  return fib(n - 1) + fib(n - 2)
 }
 
-a()
+return fib(10)
