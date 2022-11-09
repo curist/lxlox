@@ -23,8 +23,8 @@ let ObjType = object.ObjType
 // OBJSIZE:   4 little endian
 // CHUNKS:    2 little endian -> we can have up to 65536 chunks
 // TBD:       16 - (2+1+1+4+2) = 6
-// CHUNKADDR: 4 little endian, each
 // # chunk layout
+// CHUNK_SIZE: 4 little endian
 // CODE_SECTION: ?
 //      SIZE: 4 little endian
 //      CODE: various length
@@ -39,7 +39,8 @@ let ObjType = object.ObjType
 //        NIL:    1
 //        NUMBER: 1 + 8 (double)
 //        OBJ:    1 + 1 (obj type) + obj type dependent layout(length)
-//          STRING: 4 little endian size + actual string
+//          STRING:   4 little endian size + actual string
+//          FUNCTION: 2 little endian chunks index
 // DEBUG_SECTION:
 //      SIZE: 4 little endian
 //      FILEPATH_LENGTH: 2 file path length
@@ -95,9 +96,12 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-fn buildChunkObj(chunk, flags) {
+fn buildChunkObj(chunk, chunksCount, flags) {
   let obj = []
   let debug = flags.debug
+
+  // reserve chunk size
+  obj = concat(obj, int32ToBytes(0))
 
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
@@ -175,12 +179,41 @@ fn buildChunkObj(chunk, flags) {
     writeBytesAt(obj, int32ToBytes(len(debugLines)), debugSectionStart)
     obj = concat(obj, debugLines)
   }
-  return obj
+
+  // update chunk total size
+  writeBytesAt(obj, int32ToBytes(len(obj) - 4), 0)
+
+  return {
+    obj: obj,
+    functions: []
+  }
+}
+
+fn dumpObj(obj) {
+  // print formatted obj in plain text
+  let buffered = ""
+  let totalSize = len(obj)
+  for let i = 0; i < totalSize; {
+    for let j = i; j < i + 16 and j < totalSize; j = j + 1 {
+      buffered = buffered + obj[j]
+      if j % 2 == 1 {
+        buffered = buffered + " "
+      }
+    }
+
+    i = i + 16
+
+    if len(buffered) > 500 {
+      print(buffered)
+      buffered = ""
+    } else {
+      buffered = buffered + "\n"
+    }
+  }
+  print(buffered)
 }
 
 fn objbuilder(function, debug) {
-  // XXX: handling only 1 chunk for now
-  let chunk = function.chunk
   let obj = []
 
   let flags = {
@@ -194,8 +227,12 @@ fn objbuilder(function, debug) {
   })
   obj = concat(obj, header)
 
-  let chunkObj = buildChunkObj(function.chunk, flags)
-  obj = concat(obj, chunkObj)
+  let functions = [function]
+  for let i = 0; i < len(functions); i = i + 1 {
+    let chunkObj = buildChunkObj(function.chunk, len(functions), flags)
+    functions = concat(functions, chunkObj.functions)
+    obj = concat(obj, chunkObj.obj)
+  }
 
   // update obj size
   let totalSize = len(obj)
@@ -203,28 +240,6 @@ fn objbuilder(function, debug) {
 
   return {
     obj: obj,
-    dump: fn() {
-      // print formatted obj in plain text
-      let buffered = ""
-      let totalSize = len(obj)
-      for let i = 0; i < totalSize; {
-        for let j = i; j < i + 16 and j < totalSize; j = j + 1 {
-          buffered = buffered + obj[j]
-          if j % 2 == 1 {
-            buffered = buffered + " "
-          }
-        }
-
-        i = i + 16
-
-        if len(buffered) > 500 {
-          print(buffered)
-          buffered = ""
-        } else {
-          buffered = buffered + "\n"
-        }
-      }
-      print(buffered)
-    },
+    dump: fn(){dumpObj(obj)},
   }
 }
