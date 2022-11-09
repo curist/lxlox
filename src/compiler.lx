@@ -66,7 +66,6 @@ fn Local(name, depth) {{
 fn Compiler(type) {{
   enclosing: nil,
   locals: [],
-  localCount: 0,
   scopeDepth: 0,
   function: nil,
   type: type,
@@ -134,7 +133,6 @@ mod.compile = fn(src, filename) {
     compiler.enclosing = current
     compiler.function = Function("", 0, Chunk(filename))
     compiler.locals = [Local("", 0)]
-    compiler.localCount = 1
     current = compiler
 
     if type != FunctionType.SCRIPT {
@@ -331,7 +329,7 @@ mod.compile = fn(src, filename) {
   fn identifiersEqual(nameA, nameB) { nameA == nameB }
 
   fn resolveLocal(compiler, name) {
-    for let i = compiler.localCount - 1; i >= 0; i = i - 1 {
+    for let i = len(compiler.locals) - 1; i >= 1; i = i - 1 {
       let local = compiler.locals[i]
       if identifiersEqual(name, local.name) {
         if local.depth == -1 {
@@ -344,12 +342,11 @@ mod.compile = fn(src, filename) {
   }
 
   fn addLocal(name) {
-    if current.localCount >= 256 {
+    if len(current.locals) >= 256 {
       error("Too many local variables in function.")
       return
     }
     current.locals = append(current.locals, Local(name, -1))
-    current.localCount = current.localCount + 1
   }
 
   fn declareVariable() {
@@ -359,7 +356,7 @@ mod.compile = fn(src, filename) {
 
     let name = parser.previous.lexeme
 
-    for let i = current.localCount - 1; i >= 0; i = i - 1 {
+    for let i = len(current.locals) - 1; i >= 0; i = i - 1 {
       let local = current.locals[i]
       if local.depth != -1 and local.depth < current.scopeDepth {
         break
@@ -388,7 +385,7 @@ mod.compile = fn(src, filename) {
     if current.scopeDepth == 0 {
       return
     }
-    current.locals[current.localCount - 1].depth = current.scopeDepth
+    current.locals[len(current.locals) - 1].depth = current.scopeDepth
   }
 
   fn defineVariable(global, line) {
@@ -422,14 +419,14 @@ mod.compile = fn(src, filename) {
     current.scopeDepth = current.scopeDepth - 1
 
     fn shouldPop() {
-      current.localCount > 0 and
-        current.locals[current.localCount - 1].depth > current.scopeDepth
+      len(current.locals) > 0 and
+        current.locals[len(current.locals) - 1].depth > current.scopeDepth
     }
 
     let totalPops = 0
     for shouldPop() {
       totalPops = totalPops + 1
-      current.localCount = current.localCount - 1
+      current.locals = lib.butlast(current.locals)
     }
 
     if totalPops == 1 {
@@ -441,18 +438,16 @@ mod.compile = fn(src, filename) {
 
   fn resetScopeVariables(n) {
     // emit right amount of pops
-    let localCount = current.localCount
-    defer current.localCount = localCount
+    let localIndex = len(current.locals) - 1
 
     fn shouldPop() {
-      current.localCount > 0 and
-        current.locals[current.localCount - 1].depth > n
+      localIndex >= 0 and current.locals[localIndex].depth > n
     }
 
     let totalPops = 0
     for shouldPop() {
       totalPops = totalPops + 1
-      current.localCount = current.localCount - 1
+      localIndex = localIndex - 1
     }
 
     if totalPops == 1 {
@@ -635,6 +630,7 @@ mod.compile = fn(src, filename) {
       emitByte(OP.NIL, line)
     }
     emitByte(OP.DUP, line)
+
     defineVariable(global, line)
   }
 
@@ -823,7 +819,6 @@ mod.compile = fn(src, filename) {
     let getOp
     let setOp
     let arg = resolveLocal(current, name)
-
     if arg != -1 {
       getOp = OP.GET_LOCAL
       setOp = OP.SET_LOCAL

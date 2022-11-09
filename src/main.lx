@@ -1,8 +1,5 @@
-let lib = import "src/lib.lx"
 let compiler = import "src/compiler.lx"
 let objbuilder = import "src/objbuilder.lx"
-
-let pp = lib.pp
 
 fn main() {
   // TODO: proper args parsing
@@ -15,7 +12,7 @@ fn main() {
     DEBUG_BUILD = Lx.args[1] == "--debug"
     path = Lx.args[2]
   } else {
-    pp(["Usage: lxlox [--debug] <path>"])
+    print("Usage: lxlox [--debug] <path>")
     Lx.exit(64)
   }
 
