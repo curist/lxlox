@@ -155,7 +155,7 @@ fn buildChunkObj(chunk, chunksCount, flags) {
     })
 
     // update constants section size
-    writeBytesAt(obj, int32ToBytes(len(constants)), constSectionStart)
+    writeBytesAt(obj, int32ToBytes(len(constants) + 1), constSectionStart)
     obj = concat(obj, constants)
   }
 
@@ -237,6 +237,9 @@ fn objbuilder(function, debug) {
   // update obj size
   let totalSize = len(obj)
   writeBytesAt(obj, int32ToBytes(totalSize), 4)
+
+  // update chunks count
+  writeBytesAt(obj, numberToDoubleBytes(len(functions)), 8)
 
   return {
     obj: obj,
