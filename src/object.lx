@@ -21,6 +21,7 @@ mod.ObjType = {
   let iota = lib.iota(0)
   {
     FUNCTION: iota(),
+    NATIVE: iota(),
     STRING: iota(),
   }
 }
