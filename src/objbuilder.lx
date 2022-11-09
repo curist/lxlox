@@ -95,21 +95,9 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-fn objbuilder(function, debug) {
-  // XXX: handling only 1 chunk for now
-  let chunk = function.chunk
+fn buildChunkObj(chunk, flags) {
   let obj = []
-
-  let flags = setFlags({
-    debug: debug,
-  })
-
-  let header = ["4c", "58", lib.tohex(VERSION), flags]
-  let fillRest = 16 - len(header)
-  each(range(fillRest), fn() {
-    header = append(header, "00")
-  })
-  obj = concat(obj, header)
+  let debug = flags.debug
 
   let codeSize = len(chunk.bytecode)
   obj = concat(obj, int32ToBytes(codeSize))
@@ -139,7 +127,6 @@ fn objbuilder(function, debug) {
         constants = concat(constants, double)
       },
       [ValueType.OBJ]: fn(val) {
-        lib.prettyprint(val)
         let handler = objTypeHandlers[val.kind]
         if handler {
           constants = append(constants, lib.tohex(val.kind))
@@ -188,6 +175,27 @@ fn objbuilder(function, debug) {
     writeBytesAt(obj, int32ToBytes(len(debugLines)), debugSectionStart)
     obj = concat(obj, debugLines)
   }
+  return obj
+}
+
+fn objbuilder(function, debug) {
+  // XXX: handling only 1 chunk for now
+  let chunk = function.chunk
+  let obj = []
+
+  let flags = {
+    debug: debug,
+  }
+
+  let header = ["4c", "58", lib.tohex(VERSION), setFlags(flags)]
+  let fillRest = 16 - len(header)
+  each(range(fillRest), fn() {
+    header = append(header, "00")
+  })
+  obj = concat(obj, header)
+
+  let chunkObj = buildChunkObj(function.chunk, flags)
+  obj = concat(obj, chunkObj)
 
   // update obj size
   let totalSize = len(obj)
