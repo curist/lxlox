@@ -34,7 +34,3 @@ for let i = 0; i < 28; i = i + 1 {
 }
 a
 
-fn what() {
-  let x = 123
-}
-what

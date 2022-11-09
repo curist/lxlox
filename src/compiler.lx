@@ -510,6 +510,30 @@ mod.compile = fn(src, filename) {
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
+  fn argumentList() {
+    let argCount = 0
+    fn parseArg() {
+      expression()
+      if (argCount == 255) {
+        error("Can't have more than 255 arguments.")
+      }
+      argCount = argCount + 1
+    }
+    if !check(TOKEN.RIGHT_PAREN) {
+      parseArg()
+      for match(TOKEN.COMMA) {
+        parseArg()
+      }
+    }
+    consume(TOKEN.RIGHT_PAREN, "Expect ')' after arguments.")
+    return argCount
+  }
+
+  fn call(canAssign) {
+    let argCount = argumentList()
+    emitBytes(OP.CALL, argCount, parser.previous.line)
+  }
+
   fn synchronize() {
     parser.panicMode = false
     for parser.current.type != TOKEN.EOF {
@@ -860,7 +884,7 @@ mod.compile = fn(src, filename) {
   }
 
   parseRules = {
-    [TOKEN.LEFT_PAREN]    : [grouping,      nil,    PREC.NONE],
+    [TOKEN.LEFT_PAREN]    : [grouping,      call,   PREC.CALL],
     [TOKEN.RIGHT_PAREN]   : [nil,           nil,    PREC.NONE],
     [TOKEN.LEFT_BRACE]    : [blocker,       nil,    PREC.NONE], 
     [TOKEN.RIGHT_BRACE]   : [nil,           nil,    PREC.NONE],

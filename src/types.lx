@@ -118,6 +118,7 @@ types.OP = {
     JUMP_IF_TRUE: iota(),
     JUMP_IF_FALSE: iota(),
     LOOP: iota(),
+    CALL: iota(),
     RETURN: iota(),
   }
 }
