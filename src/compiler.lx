@@ -63,6 +63,7 @@ fn Function(name, arity, chunk) {{
 fn Local(name, depth) {{
   name: name,
   depth: depth,
+  isCaptured: false,
 }}
 
 fn Upvalue(index, isLocal) {{
@@ -370,6 +371,7 @@ mod.compile = fn(src, filename) {
 
     let local = resolveLocal(compiler.enclosing, name)
     if local != -1 {
+      compiler.enclosing.locals[local].isCaptured = true
       return addUpvalue(compiler, local, true)
     }
 
@@ -462,16 +464,22 @@ mod.compile = fn(src, filename) {
         current.locals[len(current.locals) - 1].depth > current.scopeDepth
     }
 
+    let line = parser.previous.line
+
     let totalPops = 0
     for shouldPop() {
-      totalPops = totalPops + 1
+      if current.locals[len(current.locals) - 1].isCaptured {
+        emitByte(OP.CLOSE_UPVALUE, line)
+      } else {
+        totalPops = totalPops + 1
+      }
       current.locals = lib.butlast(current.locals)
     }
 
     if totalPops == 1 {
-      emitByte(OP.POP, parser.previous.line)
+      emitByte(OP.POP, line)
     } else if totalPops > 1 {
-      emitBytes(OP.POPN, totalPops, parser.previous.line)
+      emitBytes(OP.POPN, totalPops, line)
     }
   }
 

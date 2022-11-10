@@ -1,18 +1,11 @@
 fn outer() {
-  let x = "value"
-  fn middle() {
-    fn inner() {
-      print(x)
-    }
-
-    print("create inner closure")
-    return inner
+  let x = "outside"
+  fn inner() {
+    print(x)
   }
 
-  print("return from outer")
-  return middle
+  return inner
 }
 
-let mid = outer()
-let in = mid()
-in()
+let closure = outer()
+closure()
