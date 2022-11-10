@@ -25,6 +25,8 @@ let ObjType = object.ObjType
 // TBD:       16 - (2+1+1+4+2) = 6
 // # chunk layout
 // CHUNK_SIZE: 4 little endian
+//    FUNCTION_ARITY: 1
+//     UPVALUE_COUNT: 1
 //   CHUNK_NAME_SIZE: 2 little endian
 //        CHUNK_NAME: string, vary length, aka function name
 // CODE_SECTION: ?
@@ -110,6 +112,7 @@ fn buildChunkObj(function, flags) {
   obj = concat(obj, int32ToBytes(0))
 
   obj = append(obj, lib.tohex(function.arity))
+  obj = append(obj, lib.tohex(function.upvalueCount))
 
   // chunk name info
   obj = concat(obj, numberToDoubleBytes(len(funcName)))
