@@ -630,7 +630,7 @@ mod.compile = fn(src, filename) {
     block()
 
     let func = endCompiler()
-    emitBytes(OP.CONSTANT, makeConstant(ObjectFunction(func)), parser.previous.line)
+    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), parser.previous.line)
   }
 
   fn fnExpr() {

@@ -1,7 +1,7 @@
 .PHONY: main test
 
 # can't parse src/main.lx yet :)
-TARGET = test/stub/ch24.lx
+TARGET = test/stub/ch25.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
@@ -19,6 +19,7 @@ dump:
 	lx.ts src/main.lx --debug test/stub/ch23.lx | xxd -r -p > /tmp/ch23.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch23-1.lx | xxd -r -p > /tmp/ch23-1.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch24.lx | xxd -r -p > /tmp/ch24.lxobj &
+	lx.ts src/main.lx --debug test/stub/ch25.lx | xxd -r -p > /tmp/ch25.lxobj &
 
 runall:
 	../clox/out/clox /tmp/ch17.lxobj
@@ -29,6 +30,7 @@ runall:
 	../clox/out/clox /tmp/ch23.lxobj
 	../clox/out/clox /tmp/ch23-1.lxobj
 	../clox/out/clox /tmp/ch24.lxobj
+	../clox/out/clox /tmp/ch25.lxobj
 
 
 all: main test dump
