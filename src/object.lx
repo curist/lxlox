@@ -24,6 +24,7 @@ mod.ObjType = {
     FUNCTION: iota(),
     NATIVE: iota(),
     STRING: iota(),
+    UPVALUE: iota(),
   }
 }
 
