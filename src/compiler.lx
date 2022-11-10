@@ -590,7 +590,6 @@ mod.compile = fn(src, filename) {
         [TOKEN.FOR]: true,
         [TOKEN.IF]: true,
         [TOKEN.RETURN]: true,
-        [TOKEN.DEFER]: true,
         [TOKEN.IMPORT]: true,
       }
       if breakpoints[parser.current.type] {
@@ -621,7 +620,6 @@ mod.compile = fn(src, filename) {
     let line = parser.current.line
 
     // TODO: handle import
-    // TODO: handle defer
     expression()
 
     if parser.panicMode {
@@ -805,21 +803,6 @@ mod.compile = fn(src, filename) {
     breakOffsets = append(breakOffsets, [])
     continueOffsets = append(continueOffsets, [])
 
-    defer {
-      endScope()
-      // break jump to where after loop cleanup
-      // since we want to let break do their own POPN
-      patchBreaks()
-
-      loopScopeDepth = prevScopeDepth
-      breakOffsets = lib.butlast(breakOffsets)
-      continueOffsets = lib.butlast(continueOffsets)
-
-      // XXX: let for loop resolves to nil for now
-      // let's revisit how to properly return value
-      // once we know how function can return value
-      emitByte(OP.NIL, parser.previous.line)
-    }
 
 
     let loopStart = len(currentChunk().bytecode)
@@ -885,6 +868,20 @@ mod.compile = fn(src, filename) {
     if exitJump != -1 {
       patchJump(exitJump)
     }
+
+    endScope()
+    // break jump to where after loop cleanup
+    // since we want to let break do their own POPN
+    patchBreaks()
+
+    loopScopeDepth = prevScopeDepth
+    breakOffsets = lib.butlast(breakOffsets)
+    continueOffsets = lib.butlast(continueOffsets)
+
+    // XXX: let for loop resolves to nil for now
+    // let's revisit how to properly return value
+    // once we know how function can return value
+    emitByte(OP.NIL, parser.previous.line)
   }
 
   fn breakExpr() {
@@ -1000,7 +997,6 @@ mod.compile = fn(src, filename) {
     [TOKEN.IF]            : [ifExpr,          nil,    PREC.NONE],
     [TOKEN.NIL]           : [literal,         nil,    PREC.NONE],
     [TOKEN.OR]            : [nil,             or_,    PREC.OR],
-    [TOKEN.DEFER]         : [nil,             nil,    PREC.NONE],
     [TOKEN.RETURN]        : [returnStatement, nil,    PREC.NONE],
     [TOKEN.BREAK]         : [breakExpr,       nil,    PREC.NONE],
     [TOKEN.CONTINUE]      : [continueExpr,    nil,    PREC.NONE],

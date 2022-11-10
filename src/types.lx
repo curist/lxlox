@@ -69,7 +69,6 @@ types.TOKEN = {
     LET: iota(),
     BREAK: iota(),
     CONTINUE: iota(),
-    DEFER: iota(),
     IMPORT: iota(),
 
     // Termination
