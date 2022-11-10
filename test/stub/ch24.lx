@@ -6,6 +6,9 @@ fn fib(n) {
 }
 
 let start = clock()
-print("fib(35):", fib(35))
+let x = 35
+print("fib(", x, "):", fib(x))
 print("time:", clock() - start)
 print()
+
+print(int(123.456))
