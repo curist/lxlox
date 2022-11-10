@@ -146,6 +146,7 @@ mod.compile = fn(src, filename) {
     if type != FunctionType.SCRIPT {
       current.function.name = parser.previous.lexeme
     }
+    return compiler
   }
   initCompiler(FunctionType.SCRIPT, filename)
 
@@ -370,6 +371,11 @@ mod.compile = fn(src, filename) {
     let local = resolveLocal(compiler.enclosing, name)
     if local != -1 {
       return addUpvalue(compiler, local, true)
+    }
+
+    let upvalue = resolveUpvalue(compiler.enclosing, name)
+    if upvalue != -1 {
+      return addUpvalue(compiler, upvalue, false)
     }
 
     return -1
@@ -668,7 +674,13 @@ mod.compile = fn(src, filename) {
     block()
 
     let func = endCompiler()
-    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), parser.previous.line)
+    let line = parser.previous.line
+    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
+
+    for let i = 0; i < func.upvalueCount; i = i + 1 {
+      emitByte(if compiler.upvalues[i].isLocal { 1 } else 0, line)
+      emitByte(compiler.upvalues[i].index, line)
+    }
   }
 
   fn fnExpr() {
