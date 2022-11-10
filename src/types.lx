@@ -105,6 +105,8 @@ types.OP = {
     GET_GLOBAL: iota(),
     DEFINE_GLOBAL: iota(),
     SET_GLOBAL: iota(),
+    GET_UPVALUE: iota(),
+    SET_UPVALUE: iota(),
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),
