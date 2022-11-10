@@ -1,9 +1,18 @@
-let x = "global"
 fn outer() {
-  let x = "outer"
-  fn inner() {
-    print(x)
+  let x = "value"
+  fn middle() {
+    fn inner() {
+      print(x)
+    }
+
+    print("create inner closure")
+    return inner
   }
-  inner()
+
+  print("return from outer")
+  return middle
 }
-outer()
+
+let mid = outer()
+let in = mid()
+in()
