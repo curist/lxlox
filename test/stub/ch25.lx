@@ -1,11 +1,21 @@
-fn outer() {
-  let x = "outside"
-  fn inner() {
-    print(x)
-  }
+let globalOne
+let globalTwo
 
-  return inner
+fn main() {
+  for let a = 1; a <= 2; a = a + 1 {
+    fn closure() {
+      print(a)
+    }
+    if (globalOne == nil) {
+      globalOne = fn (i) {
+        fn c() { print(i) }
+      }(a)
+    } else {
+      globalTwo = closure
+    }
+  }
 }
 
-let closure = outer()
-closure()
+main()
+globalOne()
+globalTwo()

@@ -692,6 +692,11 @@ mod.compile = fn(src, filename) {
   }
 
   fn fnExpr() {
+    if check(TOKEN.LEFT_PAREN) {
+      // anonymous function
+      function(FunctionType.FUNCTION)
+      return
+    }
     let global = parseVariable("Expect function name.")
     markInitialized()
     function(FunctionType.FUNCTION)
