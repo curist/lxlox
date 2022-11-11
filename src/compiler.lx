@@ -2,7 +2,6 @@ let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
 let object = import "src/object.lx"
-let objbuilder = import "src/objbuilder.lx"
 
 let TOKEN = types.TOKEN
 let OP = types.OP
@@ -90,6 +89,18 @@ fn ObjectFunction(func) { OBJ_VAL(object.ObjectFunction(func)) }
 fn ObjectString(string) { OBJ_VAL(object.ObjectString(string)) }
 
 let pp = lib.pp
+
+fn purifyFunction(func) {.{
+  name: func.name,
+  arity: func.arity,
+  upvalueCount: func.upvalueCount,
+  chunk: .{
+    filename: func.chunk.filename,
+    bytecode: func.chunk.bytecode,
+    constants: func.chunk.constants,
+    lines: func.chunk.lines,
+  },
+}}
 
 fn compile(src, filename) {
   let scanner = initScanner(src)
@@ -420,9 +431,9 @@ fn compile(src, filename) {
 
   fn endCompiler() {
     emitReturn()
-    let function = current.function
+    let func = current.function
     current = current.enclosing
-    return function
+    return purifyFunction(func)
   }
 
   fn beginScope() {
@@ -532,7 +543,6 @@ fn compile(src, filename) {
     let path = parser.previous.literal
     let imported = importCache[path]
     if imported {
-      print("Skipping imported " + path)
       return
     }
     let src = slurp(path)
@@ -540,13 +550,15 @@ fn compile(src, filename) {
       error("Fail to import: " + path)
       return
     }
-    print("import compile " + path)
     let start = clock()
-    let func = compile(src, path)
+    let result = compile(src, path)
+    let func = result.function
+    func.name = "<script " + path + ">"
     importCache[path] = func
 
-    print("====== " + path + " compiled using " + str(clock() - start) + " ms")
-    objbuilder(func.function, false).dump()
+    let line = parser.previous.line
+    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
+    emitBytes(OP.CALL, 0, line)
   }
 
   fn expression() {
@@ -709,7 +721,8 @@ fn compile(src, filename) {
 
     let func = endCompiler()
     let line = parser.previous.line
-    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
+    let function = purifyFunction(func)
+    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(function)), line)
 
     for let i = 0; i < func.upvalueCount; i = i + 1 {
       emitByte(if compiler.upvalues[i].isLocal { 1 } else 0, line)
@@ -1110,7 +1123,7 @@ fn compile(src, filename) {
 
   return .{
     success: !parser.hadError,
-    function: func,
+    function: purifyFunction(func),
   }
 }
 
