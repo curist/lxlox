@@ -630,14 +630,17 @@ mod.compile = fn(src, filename) {
 
   fn block() {
     let hasExpression = false
-    for !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+    fn hasNextExpression() {
+      !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF)
+    }
+    for hasNextExpression() {
       hasExpression = true
       let line = parser.current.line
       expression()
 
       // don't pop last evaluated expression
       // so we check ahead if we are going to run another loop
-      if !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF) {
+      if hasNextExpression() {
         emitByte(OP.POP, line)
       }
     }
@@ -740,7 +743,40 @@ mod.compile = fn(src, filename) {
   }
 
   fn hashmap() {
+    emitByte(OP.HASHMAP, parser.previous.line)
 
+    fn hasNextKeyValuePair() {
+      !check(TOKEN.RIGHT_BRACE) and !check(TOKEN.EOF)
+    }
+    fn keyvalue() {
+      if match(TOKEN.LEFT_BRACKET) {
+        // index pattern `.{ [expr]: value }`
+        expression()
+        consume(TOKEN.RIGHT_BRACKET, "Expect ']' for hashmap index key.")
+      } else {
+        // key pattern `.{ key: value }`
+        consume(TOKEN.IDENTIFIER, "Expect key for hashmap.")
+        let key = parser.previous.lexeme
+        emitConstant(ObjectString(key), parser.previous.line)
+      }
+      consume(TOKEN.COLON, "Expect ':' for hashmap.")
+
+      // value
+      expression()
+
+      // asoociate key vlaue to hashmap
+      emitByte(OP.ASSOC, parser.previous.line)
+    }
+
+    if hasNextKeyValuePair() {
+      keyvalue()
+
+      for match(TOKEN.COMMA) and hasNextKeyValuePair() {
+        keyvalue()
+      }
+    }
+
+    consume(TOKEN.RIGHT_BRACE, "Expect '}' after hashmap.")
   }
 
   fn number() {
