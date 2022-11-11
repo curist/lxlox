@@ -553,7 +553,6 @@ fn compile(src, filename) {
     let start = clock()
     let result = compile(src, path)
     let func = result.function
-    func.name = "<script " + path + ">"
     importCache[path] = func
 
     let line = parser.previous.line
@@ -661,7 +660,7 @@ fn compile(src, filename) {
 
     if parser.panicMode {
       synchronize()
-    } else {
+    } else if !check(TOKEN.EOF) {
       emitByte(OP.POP, line)
     }
   }
@@ -697,6 +696,7 @@ fn compile(src, filename) {
   }
 
   fn function(functionType) {
+    let line = parser.previous.line
     let compiler = initCompiler(functionType, filename)
     beginScope()
     consume(TOKEN.LEFT_PAREN, "Expect '(' after function name.")
@@ -720,7 +720,6 @@ fn compile(src, filename) {
     block()
 
     let func = endCompiler()
-    let line = parser.previous.line
     let function = purifyFunction(func)
     emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(function)), line)
 
@@ -800,12 +799,13 @@ fn compile(src, filename) {
       }
 
       consume(TOKEN.COLON, "Expect ':' for hashmap.")
+      let assocLine = parser.previous.line
 
       // value
       expression()
 
-      // asoociate key vlaue to hashmap
-      emitByte(OP.ASSOC, parser.previous.line)
+      // associate key vlaue to hashmap
+      emitByte(OP.ASSOC, assocLine)
     }
 
     if hasNextKeyValuePair() {
