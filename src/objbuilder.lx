@@ -132,7 +132,7 @@ fn buildChunkObj(function, flags) {
 
   if constantsSize > 0 {
     let constants = []
-    let objTypeHandlers = {
+    let objTypeHandlers = .{
       [ObjType.STRING]: fn(value) {
         constants = concat(constants, int32ToBytes(len(value)))
         constants = concat(constants, stringToBytes(value))
@@ -141,7 +141,7 @@ fn buildChunkObj(function, flags) {
         functions = append(functions, value)
       },
     }
-    let constTypeHandlers = {
+    let constTypeHandlers = .{
       // NOTE: not having nil or bool handlers here,
       // since those are represented directly as byte codes
       [ValueType.NUMBER]: fn(value) {
@@ -201,9 +201,9 @@ fn buildChunkObj(function, flags) {
   // update chunk total size
   writeBytesAt(obj, int32ToBytes(len(obj) - 4), 0)
 
-  return {
-    .obj: obj,
-    .functions: functions,
+  return .{
+    obj: obj,
+    functions: functions,
   }
 }
 
@@ -234,8 +234,8 @@ fn dumpObj(obj) {
 fn objbuilder(main, debug) {
   let obj = []
 
-  let flags = {
-    .debug: debug,
+  let flags = .{
+    debug: debug,
   }
 
   let header = ["4c", "58", lib.tohex(VERSION), setFlags(flags)]
@@ -260,8 +260,8 @@ fn objbuilder(main, debug) {
   // update chunks count
   writeBytesAt(obj, numberToDoubleBytes(len(functions)), 8)
 
-  return {
-    .obj: obj,
-    .dump: fn(){dumpObj(obj)},
+  return .{
+    obj: obj,
+    dump: fn(){dumpObj(obj)},
   }
 }

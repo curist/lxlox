@@ -1,34 +1,34 @@
-let lib = {
-  .floor: fn(num) {
+let lib = .{
+  floor: fn(num) {
     // ^ not yet decide if we want a int() builtin
     //   or leave the implementation in a Math module
     return Lx.int(num)
   },
-  .join: fn(arr, sep) {
+  join: fn(arr, sep) {
     // ^ not yet decide if we want a join() builtin
     //   or leave the implementation in an Array module
     return Lx.join(arr, sep)
   },
-  .parseFloat: fn(s) {
+  parseFloat: fn(s) {
     // ^ not yet decide if we want a parseFloat() builtin
     //   or leave the implementation in an Math module
     Lx.parseFloat(s)
   },
-  .butlast: fn(arr) {
+  butlast: fn(arr) {
     Lx.butlast(arr)
   },
-  .iota: fn (start) {
+  iota: fn (start) {
     let i = start - 1
     fn() { i = i + 1 }
   },
-  .range: fn(value) { Lx.range(value) },
-  .foreach: fn(arr, cb) {
+  range: fn(value) { Lx.range(value) },
+  foreach: fn(arr, cb) {
     let length = len(arr)
     for let i = 0; i < length; i = i + 1 {
       cb(arr[i], i, arr)
     }
   },
-  .map: fn(arr, cb) {
+  map: fn(arr, cb) {
     let result = []
     let length = len(arr)
     for let i = 0; i < length; i = i + 1 {
@@ -36,7 +36,7 @@ let lib = {
     }
     result
   },
-  .reduce: fn(arr, init, cb) {
+  reduce: fn(arr, init, cb) {
     let acc = init
     let length = len(arr)
     for let i = 0; i < length; i = i + 1 {
@@ -44,8 +44,8 @@ let lib = {
     }
     acc
   },
-  .tohex: fn(num) {
-    let map = {
+  tohex: fn(num) {
+    let map = .{
       [10]: "a", [11]: "b", [12]: "c",
       [13]: "d", [14]: "e", [15]: "f",
     }
@@ -56,7 +56,7 @@ let lib = {
     let y = num % 16
     return lib.join([map[x] or x, map[y] or y], "")
   },
-  .padStart: fn(n, length, c) {
+  padStart: fn(n, length, c) {
     let s = str(n)
     if len(s) >= length {
       return s
@@ -65,7 +65,7 @@ let lib = {
       s = c + s
     }
   },
-  .padRight: fn(n, length, c) {
+  padRight: fn(n, length, c) {
     let s = str(n)
     if len(s) >= length {
       return s
@@ -74,21 +74,21 @@ let lib = {
       s = s + c
     }
   },
-  .ord: fn(c) { Lx.ord(c) },
-  .concat: fn concat(arr1, arr2) {
+  ord: fn(c) { Lx.ord(c) },
+  concat: fn concat(arr1, arr2) {
     for let i = 0; i < len(arr2); i = i + 1 {
       arr1 = append(arr1, arr2[i])
     }
     arr1
   },
-  .pp: fn pp(x) {
+  pp: fn pp(x) {
     if type(x) == "array" {
       print(lib.join(x, ""))
     } else {
       print(x)
     }
   },
-  .prettyprint: fn(x) {
+  prettyprint: fn(x) {
     fn present(x) {
       if type(x) == "array" {
         "[" + lib.join(lib.map(x, present), ",") + "]"

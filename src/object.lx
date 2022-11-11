@@ -2,11 +2,11 @@ let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let ValueType = types.ValueType
 
-let mod = {}
+let mod = .{}
 
-mod.Object = fn(kind, value) {{
-  .kind: kind,
-  .value: value,
+mod.Object = fn(kind, value) {.{
+  kind: kind,
+  value: value,
 }}
 
 mod.ObjectFunction = fn(function) {
@@ -19,12 +19,12 @@ mod.ObjectString = fn(string) {
 
 mod.ObjType = {
   let iota = lib.iota(0)
-  {
-    .CLOSURE: iota(),
-    .FUNCTION: iota(),
-    .NATIVE: iota(),
-    .STRING: iota(),
-    .UPVALUE: iota(),
+  .{
+    CLOSURE: iota(),
+    FUNCTION: iota(),
+    NATIVE: iota(),
+    STRING: iota(),
+    UPVALUE: iota(),
   }
 }
 

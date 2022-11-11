@@ -3,10 +3,10 @@ let types = import "src/types.lx"
 let TOKEN = types.TOKEN
 
 fn initScanner(src) {
-  let state = {
-    .start: 0,
-    .current: 0,
-    .line: 1,
+  let state = .{
+    start: 0,
+    current: 0,
+    line: 1,
   }
 
   let srcLen = len(src)
@@ -20,33 +20,33 @@ fn initScanner(src) {
     }
   }
 
-  fn Token(type) {{
-    .type: type,
-    .lexeme: getLexeme(),
-    .line: state.line,
+  fn Token(type) {.{
+    type: type,
+    lexeme: getLexeme(),
+    line: state.line,
   }}
 
-  fn StringToken(string) {{
-    .type: TOKEN.STRING,
-    .lexeme: getLexeme(),
-    .literal: string,
-    .line: state.line,
+  fn StringToken(string) {.{
+    type: TOKEN.STRING,
+    lexeme: getLexeme(),
+    literal: string,
+    line: state.line,
   }}
 
   fn NumberToken() {
     let lexeme = getLexeme()
-    return {
-      .type: TOKEN.NUMBER,
-      .lexeme: lexeme,
-      .literal: lib.parseFloat(lexeme),
-      .line: state.line,
+    return .{
+      type: TOKEN.NUMBER,
+      lexeme: lexeme,
+      literal: lib.parseFloat(lexeme),
+      line: state.line,
     }
   }
 
-  fn errorToken(message) {{
-    .type: TOKEN.ERROR,
-    .lexeme: message,
-    .line: state.line,
+  fn errorToken(message) {.{
+    type: TOKEN.ERROR,
+    lexeme: message,
+    line: state.line,
   }}
 
   fn advance() {
@@ -95,7 +95,7 @@ fn initScanner(src) {
     }
   }
 
-  let tokenHandlers = {
+  let tokenHandlers = .{
     ["("]: fn() { Token(TOKEN.LEFT_PAREN) },
     [")"]: fn() { Token(TOKEN.RIGHT_PAREN) },
     ["{"]: fn() { Token(TOKEN.LEFT_BRACE) },
@@ -125,10 +125,10 @@ fn initScanner(src) {
           string = string + c
         } else {
           // handle escape sequences
-          let escapeSequences = {
-            .n: "\n",
-            .r: "\r",
-            .t: "\t",
+          let escapeSequences = .{
+            n: "\n",
+            r: "\r",
+            t: "\t",
             ["\""]: "\"",
             ["\\"]: "\\",
           }
@@ -173,8 +173,8 @@ fn initScanner(src) {
   }
 
 
-  return {
-    .scanToken: fn() {
+  return .{
+    scanToken: fn() {
       skipWhitespace()
       state.start = state.current
 
