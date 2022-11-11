@@ -2,6 +2,7 @@ let lib = import "src/lib.lx"
 let types = import "src/types.lx"
 let initScanner = import "src/scanner.lx"
 let object = import "src/object.lx"
+let objbuilder = import "src/objbuilder.lx"
 
 let TOKEN = types.TOKEN
 let OP = types.OP
@@ -540,8 +541,12 @@ fn compile(src, filename) {
       return
     }
     print("import compile " + path)
+    let start = clock()
     let func = compile(src, path)
     importCache[path] = func
+
+    print("====== " + path + " compiled using " + str(clock() - start) + " ms")
+    objbuilder(func.function, false).dump()
   }
 
   fn expression() {

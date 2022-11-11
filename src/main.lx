@@ -23,7 +23,7 @@ fn main() {
     print("compile failed.")
     Lx.exit(65)
   }
-  objbuilder(result.function, DEBUG_BUILD).dump()
+  // objbuilder(result.function, DEBUG_BUILD).dump()
 }
 
 main()
