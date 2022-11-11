@@ -110,10 +110,10 @@ fn initScanner(src) {
     ["+"]: fn() { Token(TOKEN.PLUS) },
     ["/"]: fn() { Token(TOKEN.SLASH) },
     ["*"]: fn() { Token(TOKEN.STAR) },
-    ["!"]: fn() { Token(if match("=") { TOKEN.BANG_EQUAL } else TOKEN.BANG) },
-    ["="]: fn() { Token(if match("=") { TOKEN.EQUAL_EQUAL } else TOKEN.EQUAL) },
-    ["<"]: fn() { Token(if match("=") { TOKEN.LESS_EQUAL } else TOKEN.LESS) },
-    [">"]: fn() { Token(if match("=") { TOKEN.GREATER_EQUAL } else TOKEN.GREATER) },
+    ["!"]: fn() { Token(match("=") and TOKEN.BANG_EQUAL or TOKEN.BANG) },
+    ["="]: fn() { Token(match("=") and TOKEN.EQUAL_EQUAL or TOKEN.EQUAL) },
+    ["<"]: fn() { Token(match("=") and TOKEN.LESS_EQUAL or TOKEN.LESS) },
+    [">"]: fn() { Token(match("=") and TOKEN.GREATER_EQUAL or TOKEN.GREATER) },
     ["\""]: fn() {
       let string = ""
       for peek() != "\"" and !isAtEnd() {
@@ -169,7 +169,7 @@ fn initScanner(src) {
     let lexeme = getLexeme()
     let isKeyword = types.KEYWORDS[lexeme]
 
-    Token(if isKeyword { TOKEN[Lx.toUpperCase(lexeme)] } else TOKEN.IDENTIFIER)
+    Token(isKeyword and TOKEN[Lx.toUpperCase(lexeme)] or TOKEN.IDENTIFIER)
   }
 
 
