@@ -1,7 +1,7 @@
 .PHONY: main test
 
 # can't parse src/main.lx yet :)
-TARGET = test/stub/hashmap.lx
+TARGET = test/stub/array.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
@@ -20,6 +20,8 @@ dump:
 	lx.ts src/main.lx --debug test/stub/ch23-1.lx | xxd -r -p > /tmp/ch23-1.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch24.lx | xxd -r -p > /tmp/ch24.lxobj &
 	lx.ts src/main.lx --debug test/stub/ch25.lx | xxd -r -p > /tmp/ch25.lxobj &
+	lx.ts src/main.lx --debug test/stub/hashmap.lx | xxd -r -p > /tmp/hashmap.lxobj &
+	lx.ts src/main.lx --debug test/stub/array.lx | xxd -r -p > /tmp/array.lxobj &
 
 runall:
 	../clox/out/clox /tmp/ch17.lxobj
@@ -31,6 +33,8 @@ runall:
 	../clox/out/clox /tmp/ch23-1.lxobj
 	../clox/out/clox /tmp/ch24.lxobj
 	../clox/out/clox /tmp/ch25.lxobj
+	../clox/out/clox /tmp/hashmap.lxobj
+	../clox/out/clox /tmp/array.lxobj
 
 
 all: main test dump

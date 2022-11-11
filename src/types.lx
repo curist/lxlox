@@ -109,6 +109,8 @@ types.OP = {
     SET_UPVALUE: iota(),
     GET_PROPERTY: iota(),
     SET_PROPERTY: iota(),
+    GET_BY_INDEX: iota(),
+    SET_BY_INDEX: iota(),
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),

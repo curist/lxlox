@@ -581,7 +581,6 @@ mod.compile = fn(src, filename) {
   }
 
   fn dot(canAssign) {
-    // XXX: should do the same for `[`
     consume(TOKEN.IDENTIFIER, "Expect property name after '.'.")
     let name = identifierConstant(parser.previous.lexeme)
 
@@ -590,6 +589,20 @@ mod.compile = fn(src, filename) {
       emitBytes(OP.SET_PROPERTY, name, parser.previous.line)
     } else {
       emitBytes(OP.GET_PROPERTY, name, parser.previous.line)
+    }
+  }
+
+  fn index(canAssign) {
+    // index key
+    expression()
+    consume(TOKEN.RIGHT_BRACKET, "Expect ']' for index key.")
+
+    if canAssign and match(TOKEN.EQUAL) {
+      // value
+      expression()
+      emitByte(OP.SET_BY_INDEX, parser.previous.line)
+    } else {
+      emitByte(OP.GET_BY_INDEX, parser.previous.line)
     }
   }
 
@@ -792,6 +805,25 @@ mod.compile = fn(src, filename) {
     }
 
     consume(TOKEN.RIGHT_BRACE, "Expect '}' after hashmap.")
+  }
+
+  fn array() {
+    // TODO:
+    emitByte(OP.ARRAY, parser.previous.line)
+
+    fn hasNextValue() {
+      !check(TOKEN.RIGHT_BRACKET) and !check(TOKEN.EOF)
+    }
+    if hasNextValue() {
+      expression()
+      emitByte(OP.APPEND, parser.previous.line)
+
+      for match(TOKEN.COMMA) and hasNextValue() {
+        expression()
+        emitByte(OP.APPEND, parser.previous.line)
+      }
+    }
+    consume(TOKEN.RIGHT_BRACKET, "Expect ']' after array.")
   }
 
   fn number() {
@@ -1019,9 +1051,9 @@ mod.compile = fn(src, filename) {
   parseRules = .{
     [TOKEN.LEFT_PAREN]    : [grouping,        call,   PREC.CALL],
     [TOKEN.RIGHT_PAREN]   : [nil,             nil,    PREC.NONE],
-    [TOKEN.LEFT_BRACE]    : [blocker,         nil,    PREC.NONE], 
+    [TOKEN.LEFT_BRACE]    : [blocker,         nil,    PREC.NONE],
     [TOKEN.RIGHT_BRACE]   : [nil,             nil,    PREC.NONE],
-    [TOKEN.LEFT_BRACKET]  : [nil,             nil,    PREC.NONE], 
+    [TOKEN.LEFT_BRACKET]  : [array,           index,  PREC.CALL],
     [TOKEN.RIGHT_BRACKET] : [nil,             nil,    PREC.NONE],
     [TOKEN.DOT_BRACE]     : [hashmap,         nil,    PREC.NONE],
     [TOKEN.COMMA]         : [nil,             nil,    PREC.NONE],

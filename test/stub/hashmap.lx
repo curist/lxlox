@@ -9,3 +9,8 @@ print("a.foo:", a.foo)
 a.foo = "foo updated!!!"
 print("a.foo:", a.foo)
 print("math", a.bar * 100)
+
+// TODO:
+// b.y[123] = 456
+// a["bar"] = "ohhhh"
+// print(a.foo.bar[123])
