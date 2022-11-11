@@ -1,1 +1,12 @@
-let a = .{} // empty hashmap
+let a = .{
+  foo: "hello",
+  [123]: "number",
+  bar: 42,
+} // empty hashmap
+
+print("a:", a)
+
+// TODO:
+// print(a.foo)
+// a.x = 123
+// b.y[123] = 456

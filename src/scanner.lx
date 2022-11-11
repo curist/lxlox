@@ -103,6 +103,7 @@ fn initScanner(src) {
     ["["]: fn() { Token(TOKEN.LEFT_BRACKET) },
     ["]"]: fn() { Token(TOKEN.RIGHT_BRACKET) },
     [";"]: fn() { Token(TOKEN.SEMICOLON) },
+    [":"]: fn() { Token(TOKEN.COLON) },
     [","]: fn() { Token(TOKEN.COMMA) },
     ["."]: fn() { Token(match("{") and TOKEN.DOT_BRACE or TOKEN.DOT) },
     ["-"]: fn() { Token(TOKEN.MINUS) },

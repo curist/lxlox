@@ -590,6 +590,7 @@ mod.compile = fn(src, filename) {
         [TOKEN.IF]: true,
         [TOKEN.RETURN]: true,
         [TOKEN.IMPORT]: true,
+        [TOKEN.DOT_BRACE]: true,
       }
       if breakpoints[parser.current.type] {
         return
@@ -759,6 +760,7 @@ mod.compile = fn(src, filename) {
         let key = parser.previous.lexeme
         emitConstant(ObjectString(key), parser.previous.line)
       }
+
       consume(TOKEN.COLON, "Expect ':' for hashmap.")
 
       // value
