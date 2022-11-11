@@ -10,7 +10,7 @@ let ObjType = object.ObjType
 
 let UINT16_MAX = 256 * 256
 
-let mod = .{}
+let importCache = .{}
 
 let PREC = {
   let iota = lib.iota(0)
@@ -90,34 +90,7 @@ fn ObjectString(string) { OBJ_VAL(object.ObjectString(string)) }
 
 let pp = lib.pp
 
-mod.debugPrint = fn(src) {
-  let scanner = initScanner(src)
-
-  let line = -1
-
-  for true {
-    let token = scanner.scanToken()
-
-    let lineInfo = if token.line != line {
-      lib.padStart(token.line, 4, " ")
-    } else {
-      "   | "
-    }
-    pp([
-      lineInfo,
-      " ", token.type, " ",
-      lib.padRight(token.lexeme, 30, " "),
-      "\t| ",
-      types.TOKEN_NAME[token.type],
-    ])
-
-    if token.type == TOKEN.EOF {
-      break
-    }
-  }
-}
-
-mod.compile = fn(src, filename) {
+fn compile(src, filename) {
   let scanner = initScanner(src)
 
   // to get around mutual references
@@ -530,7 +503,7 @@ mod.compile = fn(src, filename) {
         emitByte(codes, line)
       }
     } else {
-      // unreable, supposely
+      // unreachable, supposely
       error("bad binary op: " + types.TOKEN_NAME[operatorType])
     }
   }
@@ -547,12 +520,34 @@ mod.compile = fn(src, filename) {
     if opCode {
       emitByte(opCode, parser.previous.line)
     } else {
-      // unreable, supposely
+      // unreachable, supposely
       error("bad literal op: " + types.TOKEN_NAME[operatorType])
     }
   }
 
+  fn importStatment() {
+    // TODO: handle relative path
+    consume(TOKEN.STRING, "Import path should be a string.")
+    let path = parser.previous.literal
+    let imported = importCache[path]
+    if imported {
+      print("Skipping imported " + path)
+      return
+    }
+    let src = slurp(path)
+    if !src {
+      error("Fail to import: " + path)
+      return
+    }
+    print("import compile " + path)
+    let func = compile(src, path)
+    importCache[path] = func
+  }
+
   fn expression() {
+    if (match(TOKEN.IMPORT)) {
+      return importStatment()
+    }
     parsePrecedence(PREC.ASSIGNMENT)
   }
 
@@ -645,7 +640,6 @@ mod.compile = fn(src, filename) {
   fn expressionStatement() {
     let line = parser.current.line
 
-    // TODO: handle import
     expression()
 
     if parser.panicMode {
@@ -1043,12 +1037,13 @@ mod.compile = fn(src, filename) {
     if opCode {
       emitByte(opCode, line)
     } else {
-      // unreable, supposely
+      // unreachable, supposely
       error("bad unary op: " + types.TOKEN_NAME[opType])
     }
   }
 
   parseRules = .{
+    [TOKEN.IMPORT]        : [nil,             nil,    PREC.NONE],
     [TOKEN.LEFT_PAREN]    : [grouping,        call,   PREC.CALL],
     [TOKEN.RIGHT_PAREN]   : [nil,             nil,    PREC.NONE],
     [TOKEN.LEFT_BRACE]    : [blocker,         nil,    PREC.NONE],
@@ -1075,7 +1070,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.LET]           : [letExpr,         nil,    PREC.NONE],
     [TOKEN.IDENTIFIER]    : [variable,        nil,    PREC.NONE],
     [TOKEN.STRING]        : [string,          nil,    PREC.NONE],
-    [TOKEN.NUMBER]        : [number           nil,    PREC.NONE],
+    [TOKEN.NUMBER]        : [number,          nil,    PREC.NONE],
     [TOKEN.AND]           : [nil,             and_,   PREC.AND],
     [TOKEN.ELSE]          : [nil,             nil,    PREC.NONE],
     [TOKEN.FALSE]         : [literal,         nil,    PREC.NONE],
@@ -1114,4 +1109,3 @@ mod.compile = fn(src, filename) {
   }
 }
 
-mod

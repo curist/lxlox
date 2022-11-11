@@ -1,4 +1,4 @@
-let compiler = import "src/compiler.lx"
+let compile = import "src/compiler.lx"
 let objbuilder = import "src/objbuilder.lx"
 
 fn main() {
@@ -16,9 +16,9 @@ fn main() {
     Lx.exit(64)
   }
 
-  let source = Lx.readTextFile(path)
+  let source = slurp(path)
 
-  let result = compiler.compile(source, path)
+  let result = compile(source, path)
   if !result.success {
     print("compile failed.")
     Lx.exit(65)

@@ -1,10 +1,11 @@
 .PHONY: main test
 
 # can't parse src/main.lx yet :)
-TARGET = test/stub/array.lx
+# TARGET = test/stub/array.lx
+TARGET = src/main.lx
 
 main:
-	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
+	# lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
 	lx.ts src/main.lx $(TARGET)
 
 test:
