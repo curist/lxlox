@@ -17,10 +17,14 @@ fn main() {
   }
 
   let source = slurp(path)
+  if !source {
+    print("Failed to open " + path)
+    Lx.exit(2)
+  }
 
   let result = compile(source, path)
   if !result.success {
-    print("compile failed.")
+    print("Compile failed.")
     Lx.exit(65)
   }
   objbuilder(result.function, DEBUG_BUILD).dump()

@@ -461,9 +461,9 @@ fn compile(src, filename) {
     }
 
     if totalPops == 1 {
-      emitByte(OP.POP, line)
+      emitByte(OP.POP2, line)
     } else if totalPops > 1 {
-      emitBytes(OP.POPN, totalPops, line)
+      emitBytes(OP.POP2N, totalPops, line)
     }
   }
 

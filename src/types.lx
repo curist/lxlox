@@ -99,6 +99,8 @@ types.OP = {
     EQUAL: iota(),
     POP: iota(),
     POPN: iota(),
+    POP2: iota(),
+    POP2N: iota(),
     DUP: iota(),
     GET_LOCAL: iota(),
     SET_LOCAL: iota(),
