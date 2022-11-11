@@ -580,6 +580,19 @@ mod.compile = fn(src, filename) {
     emitBytes(OP.CALL, argCount, parser.previous.line)
   }
 
+  fn dot(canAssign) {
+    // XXX: should do the same for `[`
+    consume(TOKEN.IDENTIFIER, "Expect property name after '.'.")
+    let name = identifierConstant(parser.previous.lexeme)
+
+    if canAssign and match(TOKEN.EQUAL) {
+      expression()
+      emitBytes(OP.SET_PROPERTY, name, parser.previous.line)
+    } else {
+      emitBytes(OP.GET_PROPERTY, name, parser.previous.line)
+    }
+  }
+
   fn synchronize() {
     parser.panicMode = false
     for parser.current.type != TOKEN.EOF {
@@ -1012,7 +1025,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.RIGHT_BRACKET] : [nil,             nil,    PREC.NONE],
     [TOKEN.DOT_BRACE]     : [hashmap,         nil,    PREC.NONE],
     [TOKEN.COMMA]         : [nil,             nil,    PREC.NONE],
-    [TOKEN.DOT]           : [nil,             nil,    PREC.NONE],
+    [TOKEN.DOT]           : [nil,             dot,    PREC.CALL],
     [TOKEN.MINUS]         : [unary,           binary, PREC.TERM],
     [TOKEN.PLUS]          : [nil,             binary, PREC.TERM],
     [TOKEN.SEMICOLON]     : [nil,             nil,    PREC.NONE],
