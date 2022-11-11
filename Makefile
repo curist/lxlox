@@ -1,7 +1,7 @@
 .PHONY: main test
 
 # can't parse src/main.lx yet :)
-TARGET = test/stub/ch25.lx
+TARGET = test/stub/ch24.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj

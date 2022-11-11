@@ -12,68 +12,68 @@ fn enumNameMapper(enum) {
 types.TOKEN = {
   let iota
   {
-    LEFT_PAREN: {
+    .LEFT_PAREN: {
       iota = lib.iota(100)
       iota()
     },
-    RIGHT_PAREN: iota(),
-    LEFT_BRACE: iota(),
-    RIGHT_BRACE: iota(),
-    LEFT_BRACKET: iota(),
-    RIGHT_BRACKET: iota(),
-    COMMA: iota(),
-    DOT: iota(),
-    MINUS: iota(),
-    PLUS: iota(),
-    SEMICOLON: iota(),
-    SLASH: iota(),
-    STAR: iota(),
-    COLON: iota(),
-    MOD: iota(),
+    .RIGHT_PAREN: iota(),
+    .LEFT_BRACE: iota(),
+    .RIGHT_BRACE: iota(),
+    .LEFT_BRACKET: iota(),
+    .RIGHT_BRACKET: iota(),
+    .COMMA: iota(),
+    .DOT: iota(),
+    .MINUS: iota(),
+    .PLUS: iota(),
+    .SEMICOLON: iota(),
+    .SLASH: iota(),
+    .STAR: iota(),
+    .COLON: iota(),
+    .MOD: iota(),
 
     // One or two character tokens.
-    BANG: {
+    .BANG: {
       iota = lib.iota(200)
       iota()
     },
-    BANG_EQUAL: iota(),
-    EQUAL: iota(),
-    EQUAL_EQUAL: iota(),
-    GREATER: iota(),
-    GREATER_EQUAL: iota(),
-    LESS: iota(),
-    LESS_EQUAL: iota(),
+    .BANG_EQUAL: iota(),
+    .EQUAL: iota(),
+    .EQUAL_EQUAL: iota(),
+    .GREATER: iota(),
+    .GREATER_EQUAL: iota(),
+    .LESS: iota(),
+    .LESS_EQUAL: iota(),
 
     // Literals.
-    IDENTIFIER: {
+    .IDENTIFIER: {
       iota = lib.iota(300)
       iota()
     },
-    STRING: iota(),
-    NUMBER: iota(),
+    .STRING: iota(),
+    .NUMBER: iota(),
 
     // Keywords.
-    AND: {
+    .AND: {
       iota = lib.iota(400) 
       iota()
     } ,
-    OR: iota(),
-    IF: iota(),
-    ELSE: iota(),
-    FN: iota(),
-    FOR: iota(),
-    NIL: iota(),
-    RETURN: iota(),
-    TRUE: iota(),
-    FALSE: iota(),
-    LET: iota(),
-    BREAK: iota(),
-    CONTINUE: iota(),
-    IMPORT: iota(),
+    .OR: iota(),
+    .IF: iota(),
+    .ELSE: iota(),
+    .FN: iota(),
+    .FOR: iota(),
+    .NIL: iota(),
+    .RETURN: iota(),
+    .TRUE: iota(),
+    .FALSE: iota(),
+    .LET: iota(),
+    .BREAK: iota(),
+    .CONTINUE: iota(),
+    .IMPORT: iota(),
 
     // Termination
-    ERROR: 990,
-    EOF: 999,
+    .ERROR: 990,
+    .EOF: 999,
   }
 }
 types.TOKEN_NAME = enumNameMapper(types.TOKEN)
@@ -90,49 +90,49 @@ types.KEYWORDS = lib.reduce(keys(types.TOKEN), {}, fn(acc, k) {
 types.OP = {
   let iota = lib.iota(0)
   {
-    CONSTANT: iota(),
-    CONST_BYTE: iota(),
-    NIL: iota(),
-    TRUE: iota(),
-    FALSE: iota(),
-    EQUAL: iota(),
-    POP: iota(),
-    POPN: iota(),
-    DUP: iota(),
-    GET_LOCAL: iota(),
-    SET_LOCAL: iota(),
-    GET_GLOBAL: iota(),
-    DEFINE_GLOBAL: iota(),
-    SET_GLOBAL: iota(),
-    GET_UPVALUE: iota(),
-    SET_UPVALUE: iota(),
-    GREATER: iota(),
-    LESS: iota(),
-    ADD: iota(),
-    SUBTRACT: iota(),
-    MULTIPLY: iota(),
-    DIVIDE: iota(),
-    NOT: iota(),
-    MOD: iota(),
-    NEGATE: iota(),
-    JUMP: iota(),
-    JUMP_IF_TRUE: iota(),
-    JUMP_IF_FALSE: iota(),
-    LOOP: iota(),
-    CALL: iota(),
-    CLOSURE: iota(),
-    CLOSE_UPVALUE: iota(),
-    RETURN: iota(),
+    .CONSTANT: iota(),
+    .CONST_BYTE: iota(),
+    .NIL: iota(),
+    .TRUE: iota(),
+    .FALSE: iota(),
+    .EQUAL: iota(),
+    .POP: iota(),
+    .POPN: iota(),
+    .DUP: iota(),
+    .GET_LOCAL: iota(),
+    .SET_LOCAL: iota(),
+    .GET_GLOBAL: iota(),
+    .DEFINE_GLOBAL: iota(),
+    .SET_GLOBAL: iota(),
+    .GET_UPVALUE: iota(),
+    .SET_UPVALUE: iota(),
+    .GREATER: iota(),
+    .LESS: iota(),
+    .ADD: iota(),
+    .SUBTRACT: iota(),
+    .MULTIPLY: iota(),
+    .DIVIDE: iota(),
+    .NOT: iota(),
+    .MOD: iota(),
+    .NEGATE: iota(),
+    .JUMP: iota(),
+    .JUMP_IF_TRUE: iota(),
+    .JUMP_IF_FALSE: iota(),
+    .LOOP: iota(),
+    .CALL: iota(),
+    .CLOSURE: iota(),
+    .CLOSE_UPVALUE: iota(),
+    .RETURN: iota(),
   }
 }
 
 types.ValueType = {
   let iota = lib.iota(0)
   {
-    BOOL:    iota(),
-    NIL:     iota(),
-    NUMBER:  iota(),
-    OBJ:     iota(),
+    .BOOL:    iota(),
+    .NIL:     iota(),
+    .NUMBER:  iota(),
+    .OBJ:     iota(),
   }
 }
 

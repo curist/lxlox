@@ -5,8 +5,8 @@ let ValueType = types.ValueType
 let mod = {}
 
 mod.Object = fn(kind, value) {{
-  kind: kind,
-  value: value,
+  .kind: kind,
+  .value: value,
 }}
 
 mod.ObjectFunction = fn(function) {
@@ -20,11 +20,11 @@ mod.ObjectString = fn(string) {
 mod.ObjType = {
   let iota = lib.iota(0)
   {
-    CLOSURE: iota(),
-    FUNCTION: iota(),
-    NATIVE: iota(),
-    STRING: iota(),
-    UPVALUE: iota(),
+    .CLOSURE: iota(),
+    .FUNCTION: iota(),
+    .NATIVE: iota(),
+    .STRING: iota(),
+    .UPVALUE: iota(),
   }
 }
 

@@ -202,8 +202,8 @@ fn buildChunkObj(function, flags) {
   writeBytesAt(obj, int32ToBytes(len(obj) - 4), 0)
 
   return {
-    obj: obj,
-    functions: functions,
+    .obj: obj,
+    .functions: functions,
   }
 }
 
@@ -235,7 +235,7 @@ fn objbuilder(main, debug) {
   let obj = []
 
   let flags = {
-    debug: debug,
+    .debug: debug,
   }
 
   let header = ["4c", "58", lib.tohex(VERSION), setFlags(flags)]
@@ -261,7 +261,7 @@ fn objbuilder(main, debug) {
   writeBytesAt(obj, numberToDoubleBytes(len(functions)), 8)
 
   return {
-    obj: obj,
-    dump: fn(){dumpObj(obj)},
+    .obj: obj,
+    .dump: fn(){dumpObj(obj)},
   }
 }

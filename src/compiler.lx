@@ -15,17 +15,17 @@ let mod = {}
 let PREC = {
   let iota = lib.iota(0)
   {
-    NONE:       iota(),
-    ASSIGNMENT: iota(),  // =
-    OR: iota(),          // or
-    AND: iota(),         // and
-    EQUALITY: iota(),    // == !=
-    COMPARISON: iota(),  // < > <= >=
-    TERM: iota(),        // + -
-    FACTOR: iota(),      // * /
-    UNARY: iota(),       // ! -
-    CALL: iota(),        // . ()
-    PRIMARY: iota(),
+    .NONE:       iota(),
+    .ASSIGNMENT: iota(),  // =
+    .OR: iota(),          // or
+    .AND: iota(),         // and
+    .EQUALITY: iota(),    // == !=
+    .COMPARISON: iota(),  // < > <= >=
+    .TERM: iota(),        // + -
+    .FACTOR: iota(),      // * /
+    .UNARY: iota(),       // ! -
+    .CALL: iota(),        // . ()
+    .PRIMARY: iota(),
     // XXX: what about [] index access pattern?
     // how do we resolve conflict between hashmap & block?
   }
@@ -34,50 +34,50 @@ let PREC = {
 let FunctionType = {
   let iota = lib.iota(0)
   {
-    FUNCTION: iota(),
-    SCRIPT:   iota(),
+    .FUNCTION: iota(),
+    .SCRIPT:   iota(),
   }
 }
 
 fn Value(kind, value) {{
-  kind: kind,
-  value: value,
+  .kind: kind,
+  .value: value,
 }}
 
 fn Chunk(filename) {{
-  filename: filename,
-  bytecode: [],
-  constants: [],
-  lines: [],
-  constantsCache: {},
+  .filename: filename,
+  .bytecode: [],
+  .constants: [],
+  .lines: [],
+  .constantsCache: {},
 }}
 
 fn Function(name, arity, chunk) {{
-  name: name,
-  arity: arity,
-  chunk: chunk,
-  upvalueCount: 0,
+  .name: name,
+  .arity: arity,
+  .chunk: chunk,
+  .upvalueCount: 0,
 }}
 
 
 fn Local(name, depth) {{
-  name: name,
-  depth: depth,
-  isCaptured: false,
+  .name: name,
+  .depth: depth,
+  .isCaptured: false,
 }}
 
 fn Upvalue(index, isLocal) {{
-  index: index,
-  isLocal: isLocal,
+  .index: index,
+  .isLocal: isLocal,
 }}
 
 fn Compiler(type) {{
-  enclosing: nil,
-  locals: [],
-  upvalues: {},
-  scopeDepth: 0,
-  function: nil,
-  type: type,
+  .enclosing: nil,
+  .locals: [],
+  .upvalues: {},
+  .scopeDepth: 0,
+  .function: nil,
+  .type: type,
 }}
 
 fn BOOL_VAL(value)   { Value(ValueType.BOOL, value) }
@@ -126,10 +126,10 @@ mod.compile = fn(src, filename) {
   let getRule
 
   let parser = {
-    current: 0,
-    previous: 0,
-    hadError: false,
-    panicMode: false,
+    .current: 0,
+    .previous: 0,
+    .hadError: false,
+    .panicMode: false,
   }
 
   let loopScopeDepth = 0
@@ -1008,9 +1008,9 @@ mod.compile = fn(src, filename) {
   getRule = fn(type) {
     let rule = parseRules[type]
     return {
-      prefix: rule[0],
-      infix: rule[1],
-      precedence: rule[2],
+      .prefix: rule[0],
+      .infix: rule[1],
+      .precedence: rule[2],
     }
   }
 
@@ -1022,8 +1022,8 @@ mod.compile = fn(src, filename) {
   let func = endCompiler()
 
   return {
-    success: !parser.hadError,
-    function: func,
+    .success: !parser.hadError,
+    .function: func,
   }
 }
 

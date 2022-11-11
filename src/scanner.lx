@@ -4,9 +4,9 @@ let TOKEN = types.TOKEN
 
 fn initScanner(src) {
   let state = {
-    start: 0,
-    current: 0,
-    line: 1,
+    .start: 0,
+    .current: 0,
+    .line: 1,
   }
 
   let srcLen = len(src)
@@ -21,32 +21,32 @@ fn initScanner(src) {
   }
 
   fn Token(type) {{
-    type: type,
-    lexeme: getLexeme(),
-    line: state.line,
+    .type: type,
+    .lexeme: getLexeme(),
+    .line: state.line,
   }}
 
   fn StringToken(string) {{
-    type: TOKEN.STRING,
-    lexeme: getLexeme(),
-    literal: string,
-    line: state.line,
+    .type: TOKEN.STRING,
+    .lexeme: getLexeme(),
+    .literal: string,
+    .line: state.line,
   }}
 
   fn NumberToken() {
     let lexeme = getLexeme()
     return {
-      type: TOKEN.NUMBER,
-      lexeme: lexeme,
-      literal: lib.parseFloat(lexeme),
-      line: state.line,
+      .type: TOKEN.NUMBER,
+      .lexeme: lexeme,
+      .literal: lib.parseFloat(lexeme),
+      .line: state.line,
     }
   }
 
   fn errorToken(message) {{
-    type: TOKEN.ERROR,
-    lexeme: message,
-    line: state.line,
+    .type: TOKEN.ERROR,
+    .lexeme: message,
+    .line: state.line,
   }}
 
   fn advance() {
@@ -126,9 +126,9 @@ fn initScanner(src) {
         } else {
           // handle escape sequences
           let escapeSequences = {
-            n: "\n",
-            r: "\r",
-            t: "\t",
+            .n: "\n",
+            .r: "\r",
+            .t: "\t",
             ["\""]: "\"",
             ["\\"]: "\\",
           }
@@ -174,7 +174,7 @@ fn initScanner(src) {
 
 
   return {
-    scanToken: fn() {
+    .scanToken: fn() {
       skipWhitespace()
       state.start = state.current
 
