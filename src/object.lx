@@ -25,6 +25,8 @@ mod.ObjType = {
     NATIVE: iota(),
     STRING: iota(),
     UPVALUE: iota(),
+    HASHMAP: iota(),
+    ARRAY: iota(),
   }
 }
 

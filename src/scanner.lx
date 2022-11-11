@@ -104,7 +104,7 @@ fn initScanner(src) {
     ["]"]: fn() { Token(TOKEN.RIGHT_BRACKET) },
     [";"]: fn() { Token(TOKEN.SEMICOLON) },
     [","]: fn() { Token(TOKEN.COMMA) },
-    ["."]: fn() { Token(TOKEN.DOT) },
+    ["."]: fn() { Token(match("{") and TOKEN.DOT_BRACE or TOKEN.DOT) },
     ["-"]: fn() { Token(TOKEN.MINUS) },
     ["%"]: fn() { Token(TOKEN.MOD) },
     ["+"]: fn() { Token(TOKEN.PLUS) },

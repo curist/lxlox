@@ -27,7 +27,6 @@ let PREC = {
     CALL: iota(),        // . ()
     PRIMARY: iota(),
     // XXX: what about [] index access pattern?
-    // how do we resolve conflict between hashmap & block?
   }
 }
 
@@ -437,7 +436,7 @@ mod.compile = fn(src, filename) {
     emitBytes(OP.DEFINE_GLOBAL, global, line)
   }
 
-  fn and_(canAssign) {
+  fn and_() {
     emitByte(OP.DUP, parser.previous.line)
     let endJump = emitJump(OP.JUMP_IF_FALSE)
     emitByte(OP.POP, parser.previous.line)
@@ -504,7 +503,7 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn binary(canAssign) {
+  fn binary() {
     let operatorType = parser.previous.type
     let line = parser.previous.line
     let rule = getRule(operatorType)
@@ -536,7 +535,7 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn literal(canAssign) {
+  fn literal() {
     let operatorType = parser.previous.type
 
     let opCodes = .{
@@ -576,7 +575,7 @@ mod.compile = fn(src, filename) {
     return argCount
   }
 
-  fn call(canAssign) {
+  fn call() {
     let argCount = argumentList()
     emitBytes(OP.CALL, argCount, parser.previous.line)
   }
@@ -644,8 +643,6 @@ mod.compile = fn(src, filename) {
     }
 
     if !hasExpression {
-      // XXX: empty block currently eval to nil
-      // should update this when we have hashmap
       emitByte(OP.NIL, parser.previous.line)
     }
 
@@ -735,12 +732,16 @@ mod.compile = fn(src, filename) {
     defineVariable(global, line)
   }
 
-  fn grouping(canAssign) {
+  fn grouping() {
     expression()
     consume(TOKEN.RIGHT_PAREN, "Expect ')' after expression.")
   }
 
-  fn number(canAssign) {
+  fn hashmap() {
+
+  }
+
+  fn number() {
     let value = parser.previous.literal
     let line = parser.previous.line
     if value >= 0 and value < 256 and lib.floor(value) == value {
@@ -750,7 +751,7 @@ mod.compile = fn(src, filename) {
     }
   }
 
-  fn or_(canAssign) {
+  fn or_() {
     emitByte(OP.DUP, parser.previous.line)
     let endJump = emitJump(OP.JUMP_IF_TRUE)
     emitByte(OP.POP, parser.previous.line)
@@ -908,7 +909,7 @@ mod.compile = fn(src, filename) {
     continueOffsets[len(continueOffsets) - 1] = append(continues, jump)
   }
 
-  fn string(canAssign) {
+  fn string() {
     let line = parser.previous.line
     emitConstant(ObjectString(parser.previous.literal), line)
   }
@@ -943,7 +944,7 @@ mod.compile = fn(src, filename) {
     namedVariable(parser.previous.lexeme, canAssign)
   }
 
-  fn unary(canAssign) {
+  fn unary() {
     let opType = parser.previous.type
     let line = parser.previous.line
 
@@ -969,6 +970,7 @@ mod.compile = fn(src, filename) {
     [TOKEN.RIGHT_BRACE]   : [nil,             nil,    PREC.NONE],
     [TOKEN.LEFT_BRACKET]  : [nil,             nil,    PREC.NONE], 
     [TOKEN.RIGHT_BRACKET] : [nil,             nil,    PREC.NONE],
+    [TOKEN.DOT_BRACE]     : [hashmap,         nil,    PREC.NONE],
     [TOKEN.COMMA]         : [nil,             nil,    PREC.NONE],
     [TOKEN.DOT]           : [nil,             nil,    PREC.NONE],
     [TOKEN.MINUS]         : [unary,           binary, PREC.TERM],

@@ -43,6 +43,7 @@ types.TOKEN = {
     GREATER_EQUAL: iota(),
     LESS: iota(),
     LESS_EQUAL: iota(),
+    DOT_BRACE: iota(),
 
     // Literals.
     IDENTIFIER: {
