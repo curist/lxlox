@@ -567,7 +567,7 @@ mod.compile = fn(src, filename) {
     }
     if !check(TOKEN.RIGHT_PAREN) {
       parseArg()
-      for match(TOKEN.COMMA) {
+      for match(TOKEN.COMMA) and !check(TOKEN.RIGHT_PAREN) {
         parseArg()
       }
     }
@@ -670,7 +670,9 @@ mod.compile = fn(src, filename) {
       }
 
       parameter()
-      for match(TOKEN.COMMA) { parameter() }
+      for match(TOKEN.COMMA) and !check(TOKEN.RIGHT_PAREN) {
+        parameter()
+      }
     }
     consume(TOKEN.RIGHT_PAREN, "Expect ')' after parameters.")
     consume(TOKEN.LEFT_BRACE, "Expect '{' before function body.")
