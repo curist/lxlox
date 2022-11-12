@@ -1,9 +1,24 @@
-200 + {
+let x = 200 + {
   let z   // local 1
-  z = nil // set local 1, which is 200 on the stack :(
-  3
+  z = 10
+  z + 3
 }
+print(x)
 
 // in original Lox, since block is a statement,
 // when we started a block, the stack is clean,
 // thus it doesn't have this issue
+//
+// let s = "s"
+// fn a() {
+//   return fn() {
+//     let c = "c"
+//     for let i = 0; i < 2; i = i + 1 {
+//       c = c + s
+//     } // XXX: c resolved to i....???
+//     return c
+//   }
+// }
+//
+// print(a()())
+//

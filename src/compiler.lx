@@ -327,7 +327,7 @@ fn compile(src, filename) {
         if local.depth == -1 {
           error("Can't read local variable in its own initializer.")
         }
-        return i + thingsOnStack
+        return i
       }
     }
     return -1
@@ -357,10 +357,10 @@ fn compile(src, filename) {
     if !compiler.enclosing { return -1 }
 
     let local = resolveLocal(compiler.enclosing, name)
+
     if local != -1 {
-      compiler.enclosing.locals[local - thingsOnStack].isCaptured = true
+      compiler.enclosing.locals[local].isCaptured = true
       return addUpvalue(compiler, local, true)
-      // should this local also     ^ - thingsOnStack??
     }
 
     let upvalue = resolveUpvalue(compiler.enclosing, name)
@@ -1029,7 +1029,11 @@ fn compile(src, filename) {
     let getOp
     let setOp
     let arg = resolveLocal(current, name)
+
     if arg != -1 {
+      arg = arg // + thingsOnStack
+      // ^ this won't work for a closure;
+      //   by the time it's excuted, the stack might not be the same shape
       getOp = OP.GET_LOCAL
       setOp = OP.SET_LOCAL
     } else if (arg = resolveUpvalue(current, name)) != -1 {
