@@ -1,9 +1,7 @@
 .PHONY: main test
 
-# TARGET = test/stub/array.lx
 # TARGET = src/main.lx
-# TARGET = src/types.lx
-TARGET = test/stub/sink.lx
+TARGET = src/types.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
@@ -24,6 +22,7 @@ dump:
 	lx.ts src/main.lx --debug test/stub/ch25.lx | xxd -r -p > /tmp/ch25.lxobj &
 	lx.ts src/main.lx --debug test/stub/hashmap.lx | xxd -r -p > /tmp/hashmap.lxobj &
 	lx.ts src/main.lx --debug test/stub/array.lx | xxd -r -p > /tmp/array.lxobj &
+	lx.ts src/main.lx --debug test/stub/sink.lx | xxd -r -p > /tmp/sink.lxobj &
 
 runall:
 	../clox/out/clox /tmp/ch17.lxobj
@@ -37,6 +36,7 @@ runall:
 	../clox/out/clox /tmp/ch25.lxobj
 	../clox/out/clox /tmp/hashmap.lxobj
 	../clox/out/clox /tmp/array.lxobj
+	../clox/out/clox /tmp/sink.lxobj
 
 
 all: main test dump
