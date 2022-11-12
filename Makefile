@@ -1,7 +1,8 @@
 .PHONY: main test
 
 # TARGET = src/main.lx
-TARGET = src/types.lx
+# TARGET = src/types.lx
+TARGET = test/stub/ch25.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj
