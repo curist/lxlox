@@ -358,8 +358,9 @@ fn compile(src, filename) {
 
     let local = resolveLocal(compiler.enclosing, name)
     if local != -1 {
-      compiler.enclosing.locals[local].isCaptured = true
+      compiler.enclosing.locals[local - thingsOnStack].isCaptured = true
       return addUpvalue(compiler, local, true)
+      // should this local also     ^ - thingsOnStack??
     }
 
     let upvalue = resolveUpvalue(compiler.enclosing, name)
