@@ -464,6 +464,11 @@ fn compile(src, filename) {
       current.locals = lib.butlast(current.locals)
     }
 
+    totalPops = totalPops - 1 // don't pop last thing
+    // we don't pop last thing, to maintain that
+    // everthing is an expression semantic
+    // -> we want to leave 1 (last evaluated) value on the stack
+
     if totalPops == 1 {
       emitByte(OP.POP2, line)
     } else if totalPops > 1 {
@@ -485,6 +490,8 @@ fn compile(src, filename) {
       localIndex = localIndex - 1
     }
 
+    // XXX: should update to what we did for endScope
+    // using pop2 & pops count - 1, i guess
     if totalPops == 1 {
       emitByte(OP.POP, parser.previous.line)
     } else if totalPops > 1 {
@@ -908,8 +915,6 @@ fn compile(src, filename) {
     breakOffsets = append(breakOffsets, [])
     continueOffsets = append(continueOffsets, [])
 
-
-
     let loopStart = len(currentChunk().bytecode)
     let loopStartLine = parser.previous.line
 
@@ -986,7 +991,7 @@ fn compile(src, filename) {
     // XXX: let for loop resolves to nil for now
     // let's revisit how to properly return value
     // once we know how function can return value
-    emitByte(OP.NIL, parser.previous.line)
+    // emitByte(OP.NIL, parser.previous.line)
   }
 
   fn breakExpr() {

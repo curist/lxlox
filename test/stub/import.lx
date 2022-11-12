@@ -1,0 +1,2 @@
+let math = import "test/stub/math_module.lx"
+print(math.add(3, 4))
