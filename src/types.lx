@@ -128,7 +128,6 @@ types.OP = {
     LOOP: iota(),
     ASSOC: iota(),
     APPEND: iota(),
-    BUTLAST: iota(),
     HASHMAP: iota(),
     ARRAY: iota(),
     CALL: iota(),
