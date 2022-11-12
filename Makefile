@@ -2,7 +2,8 @@
 
 # TARGET = test/stub/array.lx
 # TARGET = src/main.lx
-TARGET = src/types.lx
+# TARGET = src/types.lx
+TARGET = test/stub/sink.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj

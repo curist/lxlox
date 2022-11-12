@@ -1,0 +1,9 @@
+200 + {
+  let z   // local 1
+  z = nil // set local 1, which is 200 on the stack :(
+  3
+}
+
+// in original Lox, since block is a statement,
+// when we started a block, the stack is clean,
+// thus it doesn't have this issue

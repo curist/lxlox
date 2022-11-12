@@ -105,6 +105,8 @@ fn purifyFunction(func) {.{
 fn compile(src, filename) {
   let scanner = initScanner(src)
 
+  let thingsOnStack = 0
+
   // to get around mutual references
   let parseRules
   let getRule
@@ -303,7 +305,9 @@ fn compile(src, filename) {
         error("Expect expression.")
         return
       }
+      thingsOnStack = thingsOnStack + 1
       infixRule(canAssign)
+      thingsOnStack = thingsOnStack - 1
     }
 
     if canAssign and match(TOKEN.EQUAL) {
@@ -324,7 +328,7 @@ fn compile(src, filename) {
         if local.depth == -1 {
           error("Can't read local variable in its own initializer.")
         }
-        return i
+        return i + thingsOnStack
       }
     }
     return -1
