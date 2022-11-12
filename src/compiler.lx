@@ -17,16 +17,15 @@ let PREC = {
   .{
     NONE:       iota(),
     ASSIGNMENT: iota(),  // =
-    OR: iota(),          // or
-    AND: iota(),         // and
-    EQUALITY: iota(),    // == !=
+    OR:         iota(),  // or
+    AND:        iota(),  // and
+    EQUALITY:   iota(),  // == !=
     COMPARISON: iota(),  // < > <= >=
-    TERM: iota(),        // + -
-    FACTOR: iota(),      // * /
-    UNARY: iota(),       // ! -
-    CALL: iota(),        // . ()
-    PRIMARY: iota(),
-    // XXX: what about [] index access pattern?
+    TERM:       iota(),  // + -
+    FACTOR:     iota(),  // * /
+    UNARY:      iota(),  // ! -
+    CALL:       iota(),  // . ()
+    PRIMARY:    iota(),
   }
 }
 
@@ -558,6 +557,9 @@ fn compile(src, filename) {
     let result = compile(src, path)
     let func = result.function
     importCache[path] = func
+
+    // XXX: i guess currently we can get duplicated function chunks
+    // if a module is imported many times
 
     let line = parser.previous.line
     emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
