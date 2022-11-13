@@ -417,10 +417,12 @@ fn compile(src, filename) {
     current.locals[len(current.locals) - 1].depth = current.scopeDepth
   }
 
-  fn defineVariable(global, line) {
+  fn defineVariable(global, isArg, line) {
     if current.scopeDepth > 0 {
       markInitialized()
-      emitByte(OP.NEW_LOCAL, line)
+      if !isArg {
+        emitByte(OP.NEW_LOCAL, line)
+      }
       return
     }
     emitBytes(OP.DEFINE_GLOBAL, global, line)
@@ -703,7 +705,7 @@ fn compile(src, filename) {
           errorAtCurrent("Can't have more than 255 parameters.")
         }
         let constant = parseVariable("Expect parameter name.")
-        defineVariable(constant, parser.previous.line)
+        defineVariable(constant, true, parser.previous.line)
       }
 
       parameter()
@@ -735,7 +737,7 @@ fn compile(src, filename) {
     markInitialized()
     function(FunctionType.FUNCTION)
     emitByte(OP.DUP, parser.previous.line)
-    defineVariable(global, parser.previous.line)
+    defineVariable(global, false, parser.previous.line)
   }
 
   fn ifExpr() {
@@ -768,7 +770,7 @@ fn compile(src, filename) {
     }
     emitByte(OP.DUP, line)
 
-    defineVariable(global, line)
+    defineVariable(global, false, line)
   }
 
   fn grouping() {
