@@ -467,8 +467,6 @@ fn compile(src, filename) {
   }
 
   fn resetScopeVariables(n) {
-    // TODO: break/continue should manipulate locals stack instead
-    // emit right amount of pops
     let localIndex = len(current.locals) - 1
 
     fn shouldPop() {
@@ -479,14 +477,7 @@ fn compile(src, filename) {
     for shouldPop() {
       totalPops = totalPops + 1
       localIndex = localIndex - 1
-    }
-
-    // XXX: should update to what we did for endScope
-    // using pop2 & pops count - 1, i guess
-    if totalPops == 1 {
-      emitByte(OP.POP, parser.previous.line)
-    } else if totalPops > 1 {
-      emitBytes(OP.POPN, totalPops, parser.previous.line)
+      emitByte(OP.POP_LOCAL, parser.previous.line)
     }
   }
 
