@@ -91,6 +91,7 @@ types.KEYWORDS = lib.reduce(keys(types.TOKEN), .{}, fn(acc, k) {
 types.OP = {
   let iota = lib.iota(0)
   .{
+    NOP: iota(), // might be useful in the future if we want to do op patching
     CONSTANT: iota(),
     CONST_BYTE: iota(),
     NIL: iota(),
@@ -98,9 +99,6 @@ types.OP = {
     FALSE: iota(),
     EQUAL: iota(),
     POP: iota(),
-    POPN: iota(),
-    POP2: iota(),
-    POP2N: iota(),
     DUP: iota(),
     GET_LOCAL: iota(),
     SET_LOCAL: iota(),
@@ -111,8 +109,8 @@ types.OP = {
     SET_UPVALUE: iota(),
     GET_PROPERTY: iota(),
     SET_PROPERTY: iota(),
-    GET_BY_INDEX: iota(),
-    SET_BY_INDEX: iota(),
+    GET_BY_INDEX: iota(), // XXX: unify COLLection related op name
+    SET_BY_INDEX: iota(), // XXX: unify COLLection related op name
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),
@@ -126,10 +124,10 @@ types.OP = {
     JUMP_IF_TRUE: iota(),
     JUMP_IF_FALSE: iota(),
     LOOP: iota(),
-    ASSOC: iota(),
-    APPEND: iota(),
-    HASHMAP: iota(),
-    ARRAY: iota(),
+    ASSOC: iota(), // XXX: unify COLLection related op name
+    APPEND: iota(), // XXX: unify COLLection related op name
+    HASHMAP: iota(), // XXX: unify COLLection related op name
+    ARRAY: iota(), // XXX: unify COLLection related op name
     CALL: iota(),
     CLOSURE: iota(),
     CLOSE_UPVALUE: iota(),
