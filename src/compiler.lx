@@ -986,11 +986,7 @@ fn compile(src, filename) {
     breakOffsets = lib.butlast(breakOffsets)
     continueOffsets = lib.butlast(continueOffsets)
 
-    // XXX: let for loop resolves to nil for now
-    // let's revisit how to properly return value
-    // once we know how function can return value
     emitBytes(OP.GET_LOCAL, result, parser.previous.line)
-    // emitByte(OP.NIL, parser.previous.line)
   }
 
   fn breakExpr() {
@@ -998,12 +994,26 @@ fn compile(src, filename) {
       error("Can only break inside a loop.")
       return
     }
-    resetScopeVariables(loopScopeDepth - 1)
-    let breaker = breakOffsets[len(breakOffsets) - 1]
-    let jump = emitJump(OP.JUMP)
-    breakOffsets[len(breakOffsets) - 1] = append(breaker, jump)
-    // TODO: optionally break with value
-    // TODO: how do we make sure break is the last expr in current branch?
+    fn appendBreakOffsets() {
+      resetScopeVariables(loopScopeDepth - 1)
+      let breaker = breakOffsets[len(breakOffsets) - 1]
+      let jump = emitJump(OP.JUMP)
+      breakOffsets[len(breakOffsets) - 1] = append(breaker, jump)
+    }
+    if check(TOKEN.RIGHT_BRACE) {
+      appendBreakOffsets()
+      return
+    }
+    // optionally break with value
+    expression()
+    // make sure break is the last statement in current block
+    if !check(TOKEN.RIGHT_BRACE) {
+      error("Can only break at end of block.")
+    }
+    emitBytes(OP.SET_LOCAL, 1, parser.previous.line)
+    // we reserved slot 1   ^ to store loop result
+    appendBreakOffsets()
+
   }
 
   fn continueExpr() {
