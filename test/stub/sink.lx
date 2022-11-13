@@ -1,8 +1,9 @@
-200 + {
+let x = 200 + {
   let z
   z = "ohnoe"
   3
 }
+print(x)
 
 // in original Lox, since block is a statement,
 // when we started a block, the stack is clean,

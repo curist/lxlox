@@ -420,6 +420,7 @@ fn compile(src, filename) {
   fn defineVariable(global, line) {
     if current.scopeDepth > 0 {
       markInitialized()
+      emitByte(OP.NEW_LOCAL, line)
       return
     }
     emitBytes(OP.DEFINE_GLOBAL, global, line)
@@ -454,41 +455,14 @@ fn compile(src, filename) {
 
     let line = parser.previous.line
 
-    // NOTE: plan
-    // having a separated locals stack
-    // so instead of calling normal POP or NIP (our old POP2),
-    // we should have a new op like LOCAL_POP & LOCAL_POP_N
-    // and since locals have their own stack,
-    // we no longer NIP
-    // the same goes for CLOSE_UPVALUE,
-    // it should now manipulate locals stack instead
-    // GET/SET UPVALUE
-    // GET/SET LOCAL
-    // are all now manipulating locals stack instead.
-    // XXX: how do we ADD_LOCAL(PUSH_LOCAL?)? where?
-    // name the pop op as POP_LOCAL maybe?
-    let totalPops = 0
     for shouldPop() {
+      // XXX: CLOSE_UPVALUE mixes with POP_LOCAL
       if current.locals[len(current.locals) - 1].isCaptured {
         emitByte(OP.CLOSE_UPVALUE, line)
-        // XXX: CLOSE_UPVALUE pop stack top
-        // XXX: CLOSE_UPVALUE should mix with POPs,
-        //      we shouldn't to POPN/POP2N....
       } else {
-        totalPops = totalPops + 1
+        emitByte(OP.POP_LOCAL, line)
       }
       current.locals = lib.butlast(current.locals)
-    }
-
-    totalPops = totalPops - 1 // don't pop last thing
-    // we don't pop last thing, to maintain that
-    // everthing is an expression semantic
-    // -> we want to leave 1 (last evaluated) value on the stack
-
-    if totalPops == 1 {
-      emitByte(OP.POP2, line)
-    } else if totalPops > 1 {
-      emitBytes(OP.POP2N, totalPops, line)
     }
   }
 
