@@ -7,7 +7,15 @@ let lib = .{
   join: fn(arr, sep) {
     // ^ not yet decide if we want a join() builtin
     //   or leave the implementation in an Array module
-    return Lx.join(arr, sep)
+    let s = ""
+    let l = len(arr)
+    for let i = 0; i < l; i = i + 1 {
+      if i > 0 {
+        s = s + sep
+      }
+      s = s + str(arr[i])
+    }
+    return s
   },
   parseFloat: fn(s) {
     // ^ not yet decide if we want a parseFloat() builtin
