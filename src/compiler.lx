@@ -975,7 +975,7 @@ fn compile(src, filename) {
     // XXX: let for loop resolves to nil for now
     // let's revisit how to properly return value
     // once we know how function can return value
-    // emitByte(OP.NIL, parser.previous.line)
+    emitByte(OP.NIL, parser.previous.line)
   }
 
   fn breakExpr() {

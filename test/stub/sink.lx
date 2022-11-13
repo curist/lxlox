@@ -1,32 +1,31 @@
-let x = 200 + {
-  let z
-  z = "ohnoe"
-  3
-}
-print(x)
-
-print(123)
-
-print(int(123.456))
-
-print("nope")
-print("bye")
-
 
 // in original Lox, since block is a statement,
 // when we started a block, the stack is clean,
 // thus it doesn't have this issue
 //
-// let s = "s"
-// fn a() {
-//   return fn() {
-//     let c = "c"
-//     for let i = 0; i < 2; i = i + 1 {
-//       c = c + s
-//     } // XXX: c resolved to i....???
-//     return c
-//   }
+let s = "s"
+fn a() {
+  return fn() {
+    let c = "c"
+    for let i = 0; i < 2; i = i + 1 {
+      c = c + s
+    } // XXX: c resolved to i....???
+    return c
+  }
+}
+
+print(a()())
+
+// fn foo(x, y) {
+//   x > y and x or y
 // }
-//
-// print(a()())
-//
+// let a = foo(12.4556, 299.555566)
+// print(int(a))
+
+// fn foo(x, y) {
+//   return x
+// }
+// let a = foo(1.234, 2)
+// int(a)
+
+// "wha..."
