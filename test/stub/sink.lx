@@ -1,31 +1,14 @@
-
-// in original Lox, since block is a statement,
-// when we started a block, the stack is clean,
-// thus it doesn't have this issue
-//
-let s = "s"
-fn a() {
-  return fn() {
-    let c = "c"
-    for let i = 0; i < 2; i = i + 1 {
-      c = c + s
-    } // XXX: c resolved to i....???
-    return c
-  }
+print("before")
+let x = for let i = 1; i <= 10; i = i + 1 {
+  i
 }
 
-print(a()())
+print("yep")
+print(x + x)
 
-// fn foo(x, y) {
-//   x > y and x or y
-// }
-// let a = foo(12.4556, 299.555566)
-// print(int(a))
+let y = for let i = 1; i <= 10; i = i + 1 {
+  x = x + i
+  i
+}
 
-// fn foo(x, y) {
-//   return x
-// }
-// let a = foo(1.234, 2)
-// int(a)
-
-// "wha..."
+print("x", x, "y", y)
