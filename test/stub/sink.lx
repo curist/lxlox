@@ -5,6 +5,14 @@ let x = 200 + {
 }
 print(x)
 
+print(123)
+
+print(int(123.456))
+
+print("nope")
+print("bye")
+
+
 // in original Lox, since block is a statement,
 // when we started a block, the stack is clean,
 // thus it doesn't have this issue

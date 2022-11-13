@@ -467,6 +467,7 @@ fn compile(src, filename) {
   }
 
   fn resetScopeVariables(n) {
+    // TODO: break/continue should manipulate locals stack instead
     // emit right amount of pops
     let localIndex = len(current.locals) - 1
 
