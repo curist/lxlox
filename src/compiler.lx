@@ -458,6 +458,9 @@ fn compile(src, filename) {
     for shouldPop() {
       if current.locals[len(current.locals) - 1].isCaptured {
         emitByte(OP.CLOSE_UPVALUE, line)
+        // XXX: CLOSE_UPVALUE pop stack top
+        // XXX: CLOSE_UPVALUE should mix with POPs,
+        //      we shouldn't to POPN/POP2N....
       } else {
         totalPops = totalPops + 1
       }
