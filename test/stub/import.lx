@@ -1,4 +1,12 @@
 let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
+let mod = import "test/stub/module.lx"
 
 fn printArray(arr) {
   print("========================")
@@ -8,3 +16,5 @@ fn printArray(arr) {
 }
 printArray(globals())
 printArray(keys(mod))
+
+print(mod.math.add(40, 2))
