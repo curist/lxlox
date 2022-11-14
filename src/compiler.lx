@@ -101,10 +101,10 @@ fn purifyFunction(func) {.{
   },
 }}
 
-fn compile(src, filename) {
+fn compile(src, filename, opts) {
   let scanner = initScanner(src)
 
-  let thingsOnStack = 0
+  let isModule = !opts.main
 
   // to get around mutual references
   let parseRules
@@ -304,9 +304,7 @@ fn compile(src, filename) {
         error("Expect expression.")
         return
       }
-      thingsOnStack = thingsOnStack + 1
       infixRule(canAssign)
-      thingsOnStack = thingsOnStack - 1
     }
 
     if canAssign and match(TOKEN.EQUAL) {
@@ -545,6 +543,7 @@ fn compile(src, filename) {
 
   fn importStatment() {
     // TODO: handle relative path
+    // TODO: wrap import evalution like a closure (so it doesn't pollute global)
     consume(TOKEN.STRING, "Import path should be a string.")
     let path = parser.previous.literal
     let imported = importCache[path]
@@ -556,8 +555,7 @@ fn compile(src, filename) {
       error("Fail to import: " + path)
       return
     }
-    let start = clock()
-    let result = compile(src, path)
+    let result = compile(src, path, .{})
     let func = result.function
     importCache[path] = func
 
@@ -1040,9 +1038,6 @@ fn compile(src, filename) {
     let arg = resolveLocal(current, name)
 
     if arg != -1 {
-      arg = arg // + thingsOnStack
-      // ^ this won't work for a closure;
-      //   by the time it's excuted, the stack might not be the same shape
       getOp = OP.GET_LOCAL
       setOp = OP.SET_LOCAL
     } else if (arg = resolveUpvalue(current, name)) != -1 {
@@ -1138,6 +1133,8 @@ fn compile(src, filename) {
       precedence: rule[2],
     }
   }
+
+  isModule and beginScope()
 
   advance()
   for !match(TOKEN.EOF) {

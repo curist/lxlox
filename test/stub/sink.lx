@@ -1,26 +1,19 @@
-print("before")
-let x = for let i = 1; i <= 10; i = i + 1 {
-  i
-}
+let types = import "src/types.lx"
 
-print("yep")
-print(x + x)
-
-fn loopSome() {
-  let y = for let i = 1; i <= 10; i = i + 1 {
-    x = x + i
-    if i < 5 {
-      continue
-    }
-    if i > 8 {
-      break 8591
-    }
-    i
+fn printAllKeys(m) {
+  print("========================")
+  let kk = keys(m)
+  for let i = 0; i < len(kk); i = i + 1 {
+    print(kk[i])
   }
-  return y
 }
 
+fn printArray(arr) {
+  print("========================")
+  for let i = 0; i < len(arr); i = i + 1 {
+    print(arr[i])
+  }
+}
+printAllKeys(types)
 
-let y = loopSome()
-
-print("x", x, "y", y)
+printArray(globals())

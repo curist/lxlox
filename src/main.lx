@@ -22,7 +22,7 @@ fn main() {
     Lx.exit(2)
   }
 
-  let result = compile(source, path)
+  let result = compile(source, path, .{ main: true })
   if !result.success {
     print("Compile failed.")
     Lx.exit(65)

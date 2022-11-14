@@ -1,3 +1,0 @@
-let mod = .{
-  add: fn(a, b) { a + b },
-}
