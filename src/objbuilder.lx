@@ -195,8 +195,8 @@ fn buildChunkObj(function, flags) {
     let lastLineNumber = -1
     let runningLength = 0
     fn emitDebugLines(line) {
-      if line == -1 { return }
-      debugLines = append(debugLines, lib.tohex(line))
+      if line == -1 or runningLength == 0 { return }
+      debugLines = append(debugLines, lib.tohex(runningLength))
       debugLines = concat(debugLines, numberToDoubleBytes(line))
       lastLineNumber = -1
       runningLength = 0
