@@ -255,18 +255,16 @@ fn dumpObj(obj) {
 }
 
 fn objbuilder(main, debug) {
-  let obj = []
+  let flags = .{ debug: debug }
 
-  let flags = .{
-    debug: debug,
-  }
+  let obj = ["4c", "58", lib.tohex(VERSION), setFlags(flags)]
 
-  let header = ["4c", "58", lib.tohex(VERSION), setFlags(flags)]
-  let fillRest = 32 - len(header)
-  each(range(fillRest), fn() {
-    header = append(header, "00")
-  })
-  obj = concat(obj, header)
+  let sign = "@curist"
+  let fillRest = 32 - len(obj) - len(sign)
+  each(range(fillRest), fn() { obj = append(obj, "00") })
+
+  obj = concat(obj, stringToBytes(sign))
+
 
   let functions = [main]
   for let i = 0; i < len(functions); i = i + 1 {
