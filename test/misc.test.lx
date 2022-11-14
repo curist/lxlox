@@ -21,9 +21,9 @@ test("concat", fn(assert) {
 })
 
 test("pretty print", fn(assert) {
-  let x = { a: 1, b: {"b"}, c: [1, 2] }
+  let x = .{ a: 1, [100]: "b", c: [1, 2] }
   let r = lib.prettyprint(x)
-  assert.equal(r, "{a: 1, b: \"b\", c: [1,2]}")
+  assert.equal(r, "{100: \"b\", a: 1, c: [1,2]}")
 
   r = lib.prettyprint([])
   assert.equal(r, "[]")

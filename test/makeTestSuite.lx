@@ -16,7 +16,7 @@ fn makeTestSuite() {
 
   fn defineTest(testName, testBody) {
     let testPassed = true
-    let assert = {
+    let assert = .{
       equal: fn(actual, expect) {
         totalAssertions = totalAssertions + 1
         if expect == actual {
@@ -48,10 +48,10 @@ fn makeTestSuite() {
       " asserts ", passedAssertions, "/", totalAssertions,
     ])
 
-    Lx.exit(if len(tests) == passedTests { 0 } else 1)
+    Lx.exit(len(tests) == passedTests and 0 or 1)
   }
 
-  return {
+  return .{
     defineTest: defineTest,
     run: run,
   }
