@@ -48,6 +48,7 @@ fn Chunk(filename) {.{
   constants: [],
   lines: [],
   constantsCache: .{},
+  importConstCache: .{},
 }}
 
 fn Function(name, type, arity, chunk) {.{
@@ -546,11 +547,8 @@ fn compile(src, filename, opts) {
     // TODO: handle relative path
     consume(TOKEN.STRING, "Import path should be a string.")
     let path = parser.previous.literal
-    let func
-    let imported = importCache[path]
-    if imported {
-      func = importCache[path]
-    } else {
+    let func = importCache[path]
+    if !func {
       let src = slurp(path)
       if !src {
         error("Fail to import: " + path)
@@ -561,11 +559,18 @@ fn compile(src, filename, opts) {
       importCache[path] = func
     }
 
+    let current = currentChunk()
+    let const = current.importConstCache[path]
+    if !const {
+      const = makeConstant(ObjectFunction(func))
+      current.importConstCache[path] = const
+    }
+
     // XXX: i guess currently we can get duplicated function chunks
     // if a module is imported many times
 
     let line = parser.previous.line
-    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
+    emitBytes(OP.CLOSURE, const, line)
     emitBytes(OP.CALL, 0, line)
   }
 
