@@ -547,11 +547,9 @@ fn compile(src, filename, opts) {
     consume(TOKEN.STRING, "Import path should be a string.")
     let path = parser.previous.literal
     let func
-    let funcConst
     let imported = importCache[path]
     if imported {
-      func = importCache[path].func
-      funcConst = importCache[path].const
+      func = importCache[path]
     } else {
       let src = slurp(path)
       if !src {
@@ -560,15 +558,14 @@ fn compile(src, filename, opts) {
       }
       let result = compile(src, path, .{})
       func = result.function
-      funcConst = makeConstant(ObjectFunction(func))
-      importCache[path] = .{func: func, const: funcConst}
+      importCache[path] = func
     }
 
     // XXX: i guess currently we can get duplicated function chunks
     // if a module is imported many times
 
     let line = parser.previous.line
-    emitBytes(OP.CLOSURE, funcConst, line)
+    emitBytes(OP.CLOSURE, makeConstant(ObjectFunction(func)), line)
     emitBytes(OP.CALL, 0, line)
   }
 

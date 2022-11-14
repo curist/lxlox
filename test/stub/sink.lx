@@ -2,13 +2,6 @@
 let mod1 = import "test/stub/import.lx"
 let mod2 = import "test/stub/module.lx"
 
-fn printAllKeys(m) {
-  print("========================")
-  let kk = keys(m)
-  for let i = 0; i < len(kk); i = i + 1 {
-    print(kk[i])
-  }
-}
 
 fn printArray(arr) {
   print("========================")
@@ -16,6 +9,10 @@ fn printArray(arr) {
     print(arr[i])
   }
 }
-// printAllKeys(mod2)
 
+print("XXXXXXXXX globals")
 printArray(globals())
+
+print("XXXXXXXXX mod2")
+printArray(keys(mod2))
+
