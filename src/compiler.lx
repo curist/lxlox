@@ -50,8 +50,9 @@ fn Chunk(filename) {.{
   constantsCache: .{},
 }}
 
-fn Function(name, arity, chunk) {.{
+fn Function(name, type, arity, chunk) {.{
   name: name,
+  type: type,
   arity: arity,
   chunk: chunk,
   upvalueCount: 0,
@@ -125,7 +126,7 @@ fn compile(src, filename, opts) {
   fn initCompiler(type, filename) {
     let compiler = Compiler(type)
     compiler.enclosing = current
-    compiler.function = Function("", 0, Chunk(filename))
+    compiler.function = Function("", type, 0, Chunk(filename))
     compiler.locals = [Local("", 0)]
     current = compiler
 

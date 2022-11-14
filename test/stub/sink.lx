@@ -1,4 +1,6 @@
-let types = import "src/types.lx"
+// let types = import "src/types.lx"
+let mod1 = import "test/stub/import.lx"
+let mod2 = import "test/stub/module.lx"
 
 fn printAllKeys(m) {
   print("========================")
@@ -14,6 +16,6 @@ fn printArray(arr) {
     print(arr[i])
   }
 }
-printAllKeys(types)
+// printAllKeys(mod2)
 
 printArray(globals())

@@ -1,11 +1,4 @@
 let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
-let mod = import "test/stub/module.lx"
 // XXX: maybe we should expand filepath to abs path, and use that as cache key
 
 fn printArray(arr) {
