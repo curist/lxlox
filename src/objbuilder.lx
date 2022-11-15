@@ -91,7 +91,7 @@ fn doubleToBytes(num) {
 
 fn stringToBytes(s) {
   fold(range(s), [], fn(bytes, c) {
-    append(bytes, lib.tohex(lib.ord(c)))
+    append(bytes, lib.tohex(ord(c)))
   })
 }
 

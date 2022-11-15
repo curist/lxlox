@@ -149,9 +149,13 @@ fn initScanner(src) {
     },
   }
 
-  fn isDigit(n) { n >= "0" and n <= "9" }
-  fn isAlpha(c) {
-    (c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or c == "_"
+  fn isDigit(n) { len(n) > 0 and ord(n) >= ord("0") and ord(n) <= ord("9") }
+  fn isAlpha(ch) {
+    if len(ch) < 1 { return false }
+    let c = ord(ch)
+    return (c >= ord("a") and c <= ord("z")) or
+      (c >= ord("A") and c <= ord("Z")) or
+      (c == ord("_"))
   }
 
   fn number() {

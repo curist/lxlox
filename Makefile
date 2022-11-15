@@ -4,9 +4,9 @@
 # TARGET = src/types.lx
 # TARGET = src/compiler.lx
 # TARGET = test/stub/ch25.lx
-TARGET = test/stub/sink.lx
+# TARGET = test/stub/sink.lx
 # TARGET = test/stub/import.lx
-# TARGET = test/stub/functions.lx
+TARGET = test/stub/functions.lx
 
 main:
 	lx.ts src/main.lx --debug $(TARGET) | xxd -r -p > /tmp/current.lxobj

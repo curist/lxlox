@@ -79,7 +79,6 @@ lib = .{
       s = s + c
     }
   },
-  ord: ord,
   concat: fn concat(arr1, arr2) {
     for let i = 0; i < len(arr2); i = i + 1 {
       arr1 = append(arr1, arr2[i])
