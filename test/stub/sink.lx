@@ -20,3 +20,9 @@ printArray(globals())
 print("XXXXXXXXX mod2")
 printArray(keys(mod2))
 
+import "test/stub/import.lx"
+import "test/stub/import.lx"
+import "test/stub/import.lx"
+import "test/stub/import.lx"
+import "test/stub/import.lx"
+
