@@ -478,6 +478,8 @@ fn compile(src, filename, opts) {
       }
       current.locals = lib.butlast(current.locals)
     }
+
+    // XXX: warn on unused local variables (shall we?)
   }
 
   fn resetScopeVariables(n) {
@@ -1150,6 +1152,8 @@ fn compile(src, filename, opts) {
   }
   consume(TOKEN.EOF, "Expect end of expression.")
   let func = endCompiler()
+
+  // XXX: warn on unused (global) variables
 
   return .{
     success: !parser.hadError,

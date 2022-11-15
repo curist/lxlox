@@ -1,6 +1,4 @@
 let lib = import "src/lib.lx"
-let types = import "src/types.lx"
-let ValueType = types.ValueType
 
 let mod = .{}
 
@@ -28,14 +26,6 @@ mod.ObjType = {
     HASHMAP: iota(),
     ARRAY: iota(),
   }
-}
-
-mod.isString = fn(value) {
-  mod.isObjType(value, mod.ObjType.STRING)
-}
-
-mod.isObjType = fn(value, kind) {
-  valud.kind == ValueType.OBJ and value.value.kind == kind
 }
 
 mod
