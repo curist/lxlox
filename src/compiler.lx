@@ -321,16 +321,30 @@ fn compile(src, filename, opts) {
   fn identifiersEqual(nameA, nameB) { nameA == nameB }
 
   fn resolveLocal(compiler, name) {
+    // we were assume all variables before latest one,
+    // should be initialized, but that's not true for our case
+    // in a scenario like
+    // let x = { let foo }
+    // `foo` gets initialized before `x` does
+    // we when we get an index, we must also subtract
+    // how many unintialized variables is before our variable
+    let found = false
+    let index = -1
     for let i = len(compiler.locals) - 1; i >= 1; i = i - 1 {
       let local = compiler.locals[i]
-      if identifiersEqual(name, local.name) {
+      if found {
+        // check if there's uninitialized variables
+        if local.depth == -1 { index = index - 1 }
+      } else if identifiersEqual(name, local.name) {
+        // keep finding
         if local.depth == -1 {
           error("Can't read local variable in its own initializer.")
         }
-        return i
+        index = i
+        found = true
       }
     }
-    return -1
+    return index
   }
 
   fn addUpvalue(compiler, index, isLocal) {
