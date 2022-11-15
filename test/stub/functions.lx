@@ -11,7 +11,10 @@ fn printArray(arr) {
 }
 
 fn fold(arr, acc, cb) {
-  each(arr, fn(x, i) { acc = cb(acc, x, i) })
+  let length = len(arr)
+  for let i = 0; i < length; i = i + 1 {
+    acc = cb(acc, arr[i], i) 
+  }
 }
 
 fn foldr(arr, acc, cb) {
@@ -30,4 +33,6 @@ let a = range(10)
 printArray(a)
 printArray(reverse(a))
 
-print(fold(range(100000), 0, fn(sum, x) { sum + x }))
+fn add(a, b) { a + b }
+
+print(foldr(range(100000), 0, add))
