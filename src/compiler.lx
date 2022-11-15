@@ -148,7 +148,7 @@ fn compile(src, filename, opts) {
     }
     parser.panicMode = true
     pp([
-      "[line ", token.line, "]",
+      "[", filename, ":L", token.line, "]",
       if token.type == TOKEN.EOF {
         " at end"
       } else if token.type == TOKEN.ERROR {

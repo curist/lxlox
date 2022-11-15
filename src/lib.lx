@@ -1,4 +1,5 @@
-let lib = .{
+let lib = .{}
+lib = .{
   floor: fn(num) {
     // ^ not yet decide if we want a int() builtin
     //   or leave the implementation in a Math module
@@ -116,5 +117,4 @@ let lib = .{
     }
     print(present(x))
   },
-
 }
