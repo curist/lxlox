@@ -30,4 +30,4 @@ let a = range(10)
 printArray(a)
 printArray(reverse(a))
 
-
+print(fold(range(100000), 0, fn(sum, x) { sum + x }))
