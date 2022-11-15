@@ -1,16 +1,1 @@
-fn printArray(arr) {
-  print("========================")
-  for let i = 0; i < len(arr); i = i + 1 {
-    print(arr[i])
-  }
-}
-
-printArray(keys(Lx))
-printArray(Lx.args)
-
-// Lx.exit()
-
-printArray(Lx.globals())
-
-let f = slurp("chunk.c")
-print(len(f))
+import "test/stub/stinky.lx"
