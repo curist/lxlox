@@ -7,7 +7,6 @@ import "test/stub/module.lx"
 import "test/stub/module.lx"
 // XXX: properly dedup imports
 
-
 fn printArray(arr) {
   print("========================")
   for let i = 0; i < len(arr); i = i + 1 {

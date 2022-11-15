@@ -1,0 +1,33 @@
+fn each(arr, cb) {
+  let length = len(arr)
+  let aborted = false
+  for let i = 0; i < length and !aborted; i = i + 1 {
+    cb(arr[i], i, arr, fn(abort) { aborted = abort })
+  }
+}
+fn printArray(arr) {
+  print("========================")
+  each(arr, fn(x) { print(x) })
+}
+
+fn fold(arr, acc, cb) {
+  each(arr, fn(x, i) { acc = cb(acc, x, i) })
+}
+
+fn foldr(arr, acc, cb) {
+  let length = len(arr)
+  for let i = length - 1; i >= 0; i = i - 1 {
+    acc = cb(acc, arr[i], i) 
+  }
+}
+
+fn reverse(arr) {
+  // fold(arr, [], fn(acc, x) { concat([x], acc) })
+  foldr(arr, [], fn(acc, x) { concat(acc, [x]) })
+}
+
+let a = range(10)
+printArray(a)
+printArray(reverse(a))
+
+
