@@ -376,6 +376,7 @@ fn compile(src, filename, opts) {
       error("Too many local variables in function.")
       return
     }
+    if name == "_" { name = "" }
     current.locals = append(current.locals, Local(name, -1))
   }
 

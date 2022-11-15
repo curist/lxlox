@@ -36,9 +36,9 @@ fn add(a, b) { a + b }
 print(fold(range(1000000), 0, add))
 
 let sum = 0
-let foo = each(range(100000), fn(x, i, _, abort) {
+let foo = each(range(1000000), fn(_, i, _, abort) {
   if i >= 100 { abort() }
-  sum = sum + x
+  sum = sum + i
 })
 
 print(sum, foo)
