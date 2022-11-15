@@ -476,7 +476,7 @@ fn compile(src, filename, opts) {
       } else {
         emitByte(OP.POP_LOCAL, line)
       }
-      current.locals = lib.butlast(current.locals)
+      current.locals = butlast(current.locals)
     }
 
     // XXX: warn on unused local variables (shall we?)
@@ -991,8 +991,8 @@ fn compile(src, filename, opts) {
     patchBreaks()
 
     loopScopeDepth = prevScopeDepth
-    breakOffsets = lib.butlast(breakOffsets)
-    continueOffsets = lib.butlast(continueOffsets)
+    breakOffsets = butlast(breakOffsets)
+    continueOffsets = butlast(continueOffsets)
 
     emitBytes(OP.GET_LOCAL, result, parser.previous.line)
   }

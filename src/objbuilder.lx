@@ -3,7 +3,6 @@ let types = import "src/types.lx"
 let object = import "src/object.lx"
 
 let concat = lib.concat
-let range = lib.range
 
 // let's get fancy with the names?
 let fold = lib.reduce

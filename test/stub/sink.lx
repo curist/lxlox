@@ -1,12 +1,3 @@
-// let types = import "src/types.lx"
-let mod1 = import "test/stub/import.lx"
-let mod2 = import "test/stub/module.lx"
-import "test/stub/module.lx"
-import "test/stub/module.lx"
-import "test/stub/module.lx"
-import "test/stub/module.lx"
-// XXX: properly dedup imports
-
 fn printArray(arr) {
   print("========================")
   for let i = 0; i < len(arr); i = i + 1 {
@@ -14,15 +5,12 @@ fn printArray(arr) {
   }
 }
 
-print("XXXXXXXXX globals")
-printArray(globals())
+printArray(keys(Lx))
+printArray(Lx.args)
 
-print("XXXXXXXXX mod2")
-printArray(keys(mod2))
+// Lx.exit()
 
-import "test/stub/import.lx"
-import "test/stub/import.lx"
-import "test/stub/import.lx"
-import "test/stub/import.lx"
-import "test/stub/import.lx"
+printArray(Lx.globals())
 
+let f = slurp("chunk.c")
+print(len(f))

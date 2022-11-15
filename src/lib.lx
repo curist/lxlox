@@ -3,7 +3,7 @@ lib = .{
   floor: fn(num) {
     // ^ not yet decide if we want a int() builtin
     //   or leave the implementation in a Math module
-    return Lx.int(num)
+    return int(num)
   },
   join: fn(arr, sep) {
     // ^ not yet decide if we want a join() builtin
@@ -23,14 +23,10 @@ lib = .{
     //   or leave the implementation in an Math module
     Lx.parseFloat(s)
   },
-  butlast: fn(arr) {
-    Lx.butlast(arr)
-  },
   iota: fn (start) {
     let i = start - 1
     fn() { i = i + 1 }
   },
-  range: fn(value) { Lx.range(value) },
   foreach: fn(arr, cb) {
     let length = len(arr)
     for let i = 0; i < length; i = i + 1 {
@@ -83,7 +79,7 @@ lib = .{
       s = s + c
     }
   },
-  ord: fn(c) { Lx.ord(c) },
+  ord: ord,
   concat: fn concat(arr1, arr2) {
     for let i = 0; i < len(arr2); i = i + 1 {
       arr1 = append(arr1, arr2[i])
