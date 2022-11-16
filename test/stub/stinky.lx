@@ -1,12 +1,12 @@
-fn makeIota(start) {
-  let i = start - 1
-  fn() { i = i + 1 }
-}
-
-let PREC = {
-  let iota = makeIota(0)
-  .{
-    NONE: iota(),
+fn() {
+  fn hello() {
+    fn greeting() {
+      print("hello")
+      true and true
+    }
+    if greeting() {
+      greeting()
+      print("such a manner guy")
+    }
   }
 }
-
