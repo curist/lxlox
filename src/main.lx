@@ -6,11 +6,11 @@ fn main() {
   let argsLength = len(Lx.args)
   let DEBUG_BUILD = false
   let path
-  if argsLength == 4 and Lx.args[3] != "--debug" {
+  if argsLength == 3 and Lx.args[2] != "--debug" {
+    path = Lx.args[2]
+  } else if argsLength == 4 {
+    DEBUG_BUILD = Lx.args[2] == "--debug"
     path = Lx.args[3]
-  } else if argsLength == 5 {
-    DEBUG_BUILD = Lx.args[3] == "--debug"
-    path = Lx.args[4]
   } else {
     print("Usage:", Lx.args[0], "compile [--debug] <path>")
     Lx.exit(128)
