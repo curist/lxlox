@@ -171,8 +171,8 @@ fn compile(src, filename, opts) {
 
   fn emitByte(byte, line) {
     let chunk = currentChunk()
-    chunk.bytecode = append(chunk.bytecode, lib.tohex(byte))
-    chunk.lines = append(chunk.lines, line)
+    push(chunk.bytecode, lib.tohex(byte))
+    push(chunk.lines, line)
   }
 
   fn emitBytes(byte1, byte2, line) {
@@ -222,12 +222,12 @@ fn compile(src, filename, opts) {
   fn addConstant(chunk, value) {
     let k = calcValueKey(value)
     if k == "nocache" {
-      chunk.constants = append(chunk.constants, value)
+      push(chunk.constants, value)
       return len(chunk.constants) - 1
     }
     let index = chunk.constantsCache[k]
     if index { return index }
-    chunk.constants = append(chunk.constants, value)
+    push(chunk.constants, value)
     index = len(chunk.constants) - 1
     chunk.constantsCache[k] = index
     return index
@@ -391,7 +391,7 @@ fn compile(src, filename, opts) {
       return
     }
     if name == "_" { name = "" }
-    current.locals = append(current.locals, Local(name, -1))
+    push(current.locals, Local(name, -1))
   }
 
   fn reserveLocal() {
@@ -399,7 +399,7 @@ fn compile(src, filename, opts) {
       error("Too many local variables in function.")
       return
     }
-    current.locals = append(current.locals, Local("", current.scopeDepth))
+    push(current.locals, Local("", current.scopeDepth))
     emitByte(OP.NIL, parser.previous.line)
     emitByte(OP.NEW_LOCAL, parser.previous.line)
     return len(current.locals) - 1
@@ -932,8 +932,8 @@ fn compile(src, filename, opts) {
     let prevScopeDepth = loopScopeDepth
     loopScopeDepth = current.scopeDepth
 
-    breakOffsets = append(breakOffsets, [])
-    continueOffsets = append(continueOffsets, [])
+    push(breakOffsets, [])
+    push(continueOffsets, [])
 
     let loopStart = len(currentChunk().bytecode)
     let loopStartLine = parser.previous.line

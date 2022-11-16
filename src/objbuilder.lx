@@ -84,7 +84,7 @@ fn doubleToBytes(num) {
 
 fn stringToBytes(s) {
   fold(range(s), [], fn(bytes, c) {
-    append(bytes, lib.tohex(ord(c)))
+    push(bytes, lib.tohex(ord(c)))
   })
 }
 
@@ -118,7 +118,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
   // chunk type
   let moduleBuilt = isModule and builtModuleCache[filename]
   if moduleBuilt {
-    obj = append(obj, lib.tohex(ChunkType.REF))
+    push(obj, lib.tohex(ChunkType.REF))
     obj = concat(obj, int32ToBytes(moduleBuilt))
 
     // update chunk total size
@@ -130,10 +130,10 @@ fn buildChunkObj(function, flags, builtModuleCache) {
     }
   }
 
-  obj = append(obj, lib.tohex(ChunkType.ACTUAL))
+  push(obj, lib.tohex(ChunkType.ACTUAL))
 
-  obj = append(obj, lib.tohex(function.arity))
-  obj = append(obj, lib.tohex(function.upvalueCount))
+  push(obj, lib.tohex(function.arity))
+  push(obj, lib.tohex(function.upvalueCount))
 
   // chunk name info
   obj = concat(obj, numberToDoubleBytes(len(funcName)))
@@ -149,7 +149,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
   obj = concat(obj, int32ToBytes(1))
 
   let constantsSize = len(chunk.constants)
-  obj = append(obj, lib.tohex(constantsSize))
+  push(obj, lib.tohex(constantsSize))
 
   if constantsSize > 0 {
     let constants = []
@@ -159,7 +159,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
         constants = concat(constants, stringToBytes(value))
       },
       [ObjType.FUNCTION]: fn(value) {
-        functions = append(functions, value)
+        push(functions, value)
       },
     }
     let constTypeHandlers = .{
@@ -172,7 +172,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
       [ValueType.OBJ]: fn(val) {
         let handler = objTypeHandlers[val.kind]
         if handler {
-          constants = append(constants, lib.tohex(val.kind))
+          push(constants, lib.tohex(val.kind))
           handler(val.value)
         } else {
           // should be unreachable
@@ -184,7 +184,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
     each(chunk.constants, fn(val) {
       let handler = constTypeHandlers[val.kind]
       if handler {
-        constants = append(constants, lib.tohex(val.kind))
+        push(constants, lib.tohex(val.kind))
         handler(val.value)
       } else {
         // should be unreachable
@@ -213,7 +213,7 @@ fn buildChunkObj(function, flags, builtModuleCache) {
     let runningLength = 0
     fn emitDebugLines(line) {
       if line == -1 or runningLength == 0 { return }
-      debugLines = append(debugLines, lib.tohex(runningLength))
+      push(debugLines, lib.tohex(runningLength))
       debugLines = concat(debugLines, numberToDoubleBytes(line))
       lastLineNumber = -1
       runningLength = 0
@@ -278,7 +278,7 @@ fn objbuilder(main, debug) {
 
   let sign = "@curist"
   let fillRest = 32 - len(obj) - len(sign)
-  each(range(fillRest), fn() { obj = append(obj, "00") })
+  each(range(fillRest), fn() { push(obj, "00") })
 
   obj = concat(obj, stringToBytes(sign))
 
