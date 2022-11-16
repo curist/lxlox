@@ -7,7 +7,7 @@ fn printArray(arr) {
     print(arr[i])
   }
 }
-printArray(globals())
+printArray(Lx.globals())
 printArray(keys(mod))
 
 print(mod.math.add(40, 2))

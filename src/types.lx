@@ -3,7 +3,7 @@ let lib = import "src/lib.lx"
 let types = .{}
 
 fn enumNameMapper(enum) {
-  lib.reduce(keys(enum), .{}, fn(acc, k, i) {
+  lib.reduce(keys(enum), .{}, fn(acc, k) {
     acc[enum[k]] = k
     acc
   })
@@ -57,7 +57,7 @@ types.TOKEN = {
     AND: {
       iota = lib.iota(400) 
       iota()
-    } ,
+    },
     OR: iota(),
     IF: iota(),
     ELSE: iota(),
