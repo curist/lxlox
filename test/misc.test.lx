@@ -5,7 +5,6 @@ let test = suite.defineTest
 let lib = import "src/lib.lx"
 
 test("concat", fn(assert) {
-  let concat = lib.concat
   let arr1 = [1]
   let arr2 = [2]
   assert.equal(len(arr1), 1)

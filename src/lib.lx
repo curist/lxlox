@@ -1,22 +1,23 @@
-let lib = .{}
-lib = .{
+fn join(arr, sep) {
+  // ^ not yet decide if we want a join() builtin
+  //   or leave the implementation in an Array module
+  let s = ""
+  let l = len(arr)
+  for let i = 0; i < l; i = i + 1 {
+    if i > 0 {
+      s = s + sep
+    }
+    s = s + str(arr[i])
+  }
+  return s
+}
+
+let lib = .{
+  join: join,
   floor: fn(num) {
     // ^ not yet decide if we want a int() builtin
     //   or leave the implementation in a Math module
     return int(num)
-  },
-  join: fn(arr, sep) {
-    // ^ not yet decide if we want a join() builtin
-    //   or leave the implementation in an Array module
-    let s = ""
-    let l = len(arr)
-    for let i = 0; i < l; i = i + 1 {
-      if i > 0 {
-        s = s + sep
-      }
-      s = s + str(arr[i])
-    }
-    return s
   },
   parseFloat: fn(s) {
     // ^ not yet decide if we want a parseFloat() builtin
@@ -27,28 +28,6 @@ lib = .{
     let i = start - 1
     fn() { i = i + 1 }
   },
-  foreach: fn(arr, cb) {
-    let length = len(arr)
-    for let i = 0; i < length; i = i + 1 {
-      cb(arr[i], i, arr)
-    }
-  },
-  map: fn(arr, cb) {
-    let result = []
-    let length = len(arr)
-    for let i = 0; i < length; i = i + 1 {
-      result = append(result, cb(arr[i], i, arr))
-    }
-    result
-  },
-  reduce: fn(arr, init, cb) {
-    let acc = init
-    let length = len(arr)
-    for let i = 0; i < length; i = i + 1 {
-      acc = cb(acc, arr[i], i)
-    }
-    acc
-  },
   tohex: fn(num) {
     let map = .{
       [10]: "a", [11]: "b", [12]: "c",
@@ -57,9 +36,9 @@ lib = .{
     if num < 0 or num > 255 {
       return nil
     }
-    let x = lib.floor(num / 16)
+    let x = int(num / 16)
     let y = num % 16
-    return lib.join([map[x] or x, map[y] or y], "")
+    return join([map[x] or x, map[y] or y], "")
   },
   padStart: fn(n, length, c) {
     let s = str(n)
@@ -79,15 +58,9 @@ lib = .{
       s = s + c
     }
   },
-  concat: fn concat(arr1, arr2) {
-    for let i = 0; i < len(arr2); i = i + 1 {
-      arr1 = append(arr1, arr2[i])
-    }
-    arr1
-  },
   pp: fn pp(x) {
     if type(x) == "array" {
-      print(lib.join(x, ""))
+      print(join(x, ""))
     } else {
       print(x)
     }
@@ -95,14 +68,14 @@ lib = .{
   prettyprint: fn(x) {
     fn present(x) {
       if type(x) == "array" {
-        "[" + lib.join(lib.map(x, present), ",") + "]"
+        "[" + join(map(x, present), ",") + "]"
       } else if type(x) == "map" {
         let mapkeys = keys(x)
         let s = "{"
-        let keyvalues = lib.reduce(mapkeys, [], fn(acc, k) {
+        let keyvalues = fold(mapkeys, [], fn(acc, k) {
           append(acc, str(k) + ": " + present(x[k]))
         })
-        s = s + lib.join(keyvalues, ", ")
+        s = s + join(keyvalues, ", ")
         s = s + "}"
       } else if type(x) == "string" {
         "\"" + x + "\""

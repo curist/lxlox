@@ -3,7 +3,7 @@ let lib = import "src/lib.lx"
 let types = .{}
 
 fn enumNameMapper(enum) {
-  lib.reduce(keys(enum), .{}, fn(acc, k) {
+  fold(keys(enum), .{}, fn(acc, k) {
     acc[enum[k]] = k
     acc
   })
@@ -79,7 +79,7 @@ types.TOKEN = {
 }
 types.TOKEN_NAME = enumNameMapper(types.TOKEN)
 
-types.KEYWORDS = lib.reduce(keys(types.TOKEN), .{}, fn(acc, k) {
+types.KEYWORDS = fold(keys(types.TOKEN), .{}, fn(acc, k) {
   let enum = types.TOKEN[k]
   if enum >= 400 and enum < 500 {
     acc[Lx.toLowerCase(k)] = true

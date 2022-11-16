@@ -18,7 +18,7 @@ for true {
 }
 // lib.prettyprint(types.KEYWORDS)
 //
-// lib.reduce(keys(types.KEYWORDS), nil, fn(_, x) {
+// fold(keys(types.KEYWORDS), nil, fn(_, x) {
 //   print(x)
 //   print(type(x))
 //   print(x == "return")

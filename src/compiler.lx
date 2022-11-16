@@ -892,7 +892,7 @@ fn compile(src, filename, opts) {
     let chunk = currentChunk()
     let breaker = breakOffsets[len(breakOffsets) - 1]
     let currentAddr = len(currentChunk().bytecode)
-    lib.foreach(breaker, fn(addr) {
+    each(breaker, fn(addr) {
       let jump = currentAddr - addr - 2
 
       if jump > UINT16_MAX {
@@ -910,7 +910,7 @@ fn compile(src, filename, opts) {
     let chunk = currentChunk()
     let continues = continueOffsets[len(continueOffsets) - 1]
     let currentAddr = len(currentChunk().bytecode)
-    lib.foreach(continues, fn(addr) {
+    each(continues, fn(addr) {
       let jump = currentAddr - addr - 2
 
       if jump > UINT16_MAX {
