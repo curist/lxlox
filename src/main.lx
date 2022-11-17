@@ -41,7 +41,7 @@ let handlers = .{
       objbuilder(func, DEBUG_BUILD).dump()
     })
   },
-  runs: fn() {
+  run: fn() {
     handleBuildFunction(fn(func, DEBUG_BUILD) {
       __lx_result__ = objbuilder(func, DEBUG_BUILD).bytes()
     })
