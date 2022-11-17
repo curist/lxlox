@@ -46,6 +46,18 @@ let handlers = .{
       __lx_result__ = objbuilder(func, DEBUG_BUILD).bytes()
     })
   },
+  repl: fn() {
+    if !__lx_input__ {
+      __lx_result__ = "Empty input."
+      return
+    }
+    let result = compile(__lx_input__, "[LX REPL]", .{ main: true })
+    if !result.success {
+      __lx_result__ = "Compile failed."
+      return
+    }
+    __lx_result__ = objbuilder(result.function, false).bytes()
+  },
 }
 
 fn handleUnknownCommand() {
