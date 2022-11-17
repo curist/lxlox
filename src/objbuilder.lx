@@ -102,9 +102,9 @@ fn setFlags(options) {
   return lib.tohex(flags)
 }
 
-fn buildChunkObj(function, flags, builtModuleCache) {
-  let chunk = function.chunk
-  let funcName = function.name
+fn buildChunkObj(func, flags, builtModuleCache) {
+  let chunk = func.chunk
+  let funcName = func.name
   let filename = chunk.filename
   let isModule = funcName == ""
 
@@ -132,8 +132,8 @@ fn buildChunkObj(function, flags, builtModuleCache) {
 
   push(obj, lib.tohex(ChunkType.ACTUAL))
 
-  push(obj, lib.tohex(function.arity))
-  push(obj, lib.tohex(function.upvalueCount))
+  push(obj, lib.tohex(func.arity))
+  push(obj, lib.tohex(func.upvalueCount))
 
   // chunk name info
   obj = concat(obj, numberToDoubleBytes(len(funcName)))
@@ -295,16 +295,16 @@ fn objbuilder(main, debug) {
 
   let functions = [main]
   for let i = 0; i < len(functions); i = i + 1 {
-    let function = functions[i]
-    let chunkObj = buildChunkObj(function, flags, builtModuleCache)
+    let func = functions[i]
+    let chunkObj = buildChunkObj(func, flags, builtModuleCache)
     functions = concat(functions, chunkObj.functions)
     obj = concat(obj, chunkObj.obj)
 
-    let isModule = function.name == ""
+    let isModule = func.name == ""
 
-    if isModule and !builtModuleCache[function.chunk.filename] {
+    if isModule and !builtModuleCache[func.chunk.filename] {
       // just built a not cached module chunk
-      builtModuleCache[function.chunk.filename] = i
+      builtModuleCache[func.chunk.filename] = i
     }
   }
 
