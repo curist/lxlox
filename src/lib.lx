@@ -58,11 +58,11 @@ let lib = .{
       s = s + c
     }
   },
-  pp: fn pp(x) {
+  pp: fn(x) {
     if type(x) == "array" {
-      print(join(x, ""))
+      groan(join(x, ""))
     } else {
-      print(x)
+      groan(x)
     }
   },
   prettyprint: fn(x) {
