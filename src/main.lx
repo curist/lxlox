@@ -1,34 +1,50 @@
 let compile = import "src/compiler.lx"
 let objbuilder = import "src/objbuilder.lx"
 
+// to put arbitrary things to vm.globals
+let __lx_result__
+
+fn handleBuildFunction(cb) {
+  // TODO: proper args parsing
+  let argsLength = len(Lx.args)
+  let DEBUG_BUILD = false
+  let path
+  if argsLength == 3 and Lx.args[2] != "--debug" {
+    path = Lx.args[2]
+  } else if argsLength == 4 {
+    DEBUG_BUILD = Lx.args[2] == "--debug"
+    path = Lx.args[3]
+  } else {
+    groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
+    Lx.exit(128)
+  }
+
+  let source = slurp(path)
+  if !source {
+    groan("Failed to open " + path)
+    Lx.exit(2)
+  }
+
+  let result = compile(source, path, .{ main: true })
+  if !result.success {
+    groan("Compile failed.")
+    Lx.exit(65)
+  }
+
+  cb(result.function, DEBUG_BUILD)
+}
+
+
 let handlers = .{
   compile: fn() {
-    // TODO: proper args parsing
-    let argsLength = len(Lx.args)
-    let DEBUG_BUILD = false
-    let path
-    if argsLength == 3 and Lx.args[2] != "--debug" {
-      path = Lx.args[2]
-    } else if argsLength == 4 {
-      DEBUG_BUILD = Lx.args[2] == "--debug"
-      path = Lx.args[3]
-    } else {
-      groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
-      Lx.exit(128)
-    }
-
-    let source = slurp(path)
-    if !source {
-      groan("Failed to open " + path)
-      Lx.exit(2)
-    }
-
-    let result = compile(source, path, .{ main: true })
-    if !result.success {
-      groan("Compile failed.")
-      Lx.exit(65)
-    }
-    objbuilder(result.function, DEBUG_BUILD).dump()
+    handleBuildFunction(fn(func, DEBUG_BUILD) {
+      objbuilder(func, DEBUG_BUILD).dump()
+    })
+  },
+  runs: fn() {
+    handleBuildFunction(fn(func, DEBUG_BUILD) {
+      __lx_result__ = objbuilder(func, DEBUG_BUILD).bytes()
+    })
   },
 }
 
