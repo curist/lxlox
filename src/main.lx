@@ -1,33 +1,47 @@
 let compile = import "src/compiler.lx"
 let objbuilder = import "src/objbuilder.lx"
 
+let handlers = .{
+  compile: fn() {
+    // TODO: proper args parsing
+    let argsLength = len(Lx.args)
+    let DEBUG_BUILD = false
+    let path
+    if argsLength == 3 and Lx.args[2] != "--debug" {
+      path = Lx.args[2]
+    } else if argsLength == 4 {
+      DEBUG_BUILD = Lx.args[2] == "--debug"
+      path = Lx.args[3]
+    } else {
+      groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
+      Lx.exit(128)
+    }
+
+    let source = slurp(path)
+    if !source {
+      groan("Failed to open " + path)
+      Lx.exit(2)
+    }
+
+    let result = compile(source, path, .{ main: true })
+    if !result.success {
+      groan("Compile failed.")
+      Lx.exit(65)
+    }
+    objbuilder(result.function, DEBUG_BUILD).dump()
+  },
+}
+
+fn handleUnknownCommand() {
+  if Lx.args[1] {
+    groan(Lx.args[0] + " " + Lx.args[1] + ": unknown command")
+  }
+  groan("Run '" + Lx.args[0] + " help' for usage.")
+  Lx.exit(128)
+}
+
 fn main() {
-  // TODO: proper args parsing
-  let argsLength = len(Lx.args)
-  let DEBUG_BUILD = false
-  let path
-  if argsLength == 3 and Lx.args[2] != "--debug" {
-    path = Lx.args[2]
-  } else if argsLength == 4 {
-    DEBUG_BUILD = Lx.args[2] == "--debug"
-    path = Lx.args[3]
-  } else {
-    print("Usage:", Lx.args[0], "compile [--debug] <path>")
-    Lx.exit(128)
-  }
-
-  let source = slurp(path)
-  if !source {
-    print("Failed to open " + path)
-    Lx.exit(2)
-  }
-
-  let result = compile(source, path, .{ main: true })
-  if !result.success {
-    print("Compile failed.")
-    Lx.exit(65)
-  }
-  objbuilder(result.function, DEBUG_BUILD).dump()
+  {Lx.args[1] and handlers[Lx.args[1]] or handleUnknownCommand}()
 }
 
 main()
