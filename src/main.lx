@@ -17,7 +17,7 @@ fn() {
       path = Lx.args[3]
     } else {
       groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
-      Lx.exit(128)
+      Lx.exit(28)
     }
 
     let source = slurp(path)
@@ -66,7 +66,7 @@ fn() {
       groan(Lx.args[0] + " " + Lx.args[1] + ": unknown command")
     }
     groan("Run '" + Lx.args[0] + " help' for usage.")
-    Lx.exit(128)
+    Lx.exit(28)
   }
 
   {Lx.args[1] and handlers[Lx.args[1]] or handleUnknownCommand}()
