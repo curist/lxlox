@@ -106,7 +106,7 @@ fn initScanner(src) {
     [":"]: fn() { Token(TOKEN.COLON) },
     [","]: fn() { Token(TOKEN.COMMA) },
     ["."]: fn() { Token(match("{") and TOKEN.DOT_BRACE or TOKEN.DOT) },
-    ["-"]: fn() { Token(TOKEN.MINUS) },
+    ["-"]: fn() { Token(match(">") and TOKEN.MINUS_GREATER or TOKEN.MINUS) },
     ["%"]: fn() { Token(TOKEN.MOD) },
     ["+"]: fn() { Token(TOKEN.PLUS) },
     ["/"]: fn() { Token(TOKEN.SLASH) },

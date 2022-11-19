@@ -123,6 +123,8 @@ fn compile(src, filename, opts) {
   let breakOffsets = []
   let continueOffsets = []
 
+  let pendingCallCount = 0
+
   let current
   fn initCompiler(type, filename) {
     let compiler = Compiler(type)
@@ -599,7 +601,11 @@ fn compile(src, filename, opts) {
   }
 
   fn argumentList() {
-    let argCount = 0
+    let argCount = pendingCallCount
+    if pendingCallCount > 0 {
+      emitByte(OP.SWAP, parser.previous.line)
+    }
+    pendingCallCount = 0
     fn parseArg() {
       expression()
       if (argCount == 255) {
@@ -632,6 +638,11 @@ fn compile(src, filename, opts) {
     } else {
       emitBytes(OP.GET_PROPERTY, name, parser.previous.line)
     }
+  }
+
+  fn arrow() {
+    pendingCallCount = pendingCallCount + 1
+    expression()
   }
 
   fn index(canAssign) {
@@ -1117,6 +1128,7 @@ fn compile(src, filename, opts) {
     [TOKEN.COMMA]         : [nil,             nil,    PREC.NONE],
     [TOKEN.DOT]           : [nil,             dot,    PREC.CALL],
     [TOKEN.MINUS]         : [unary,           binary, PREC.TERM],
+    [TOKEN.MINUS_GREATER] : [nil,             arrow,  PREC.CALL],
     [TOKEN.PLUS]          : [nil,             binary, PREC.TERM],
     [TOKEN.SEMICOLON]     : [nil,             nil,    PREC.NONE],
     [TOKEN.SLASH]         : [nil,             binary, PREC.FACTOR],

@@ -1,0 +1,3 @@
+"asdf"->print()
+
+range(10)->append("okay")->each(_1(print))

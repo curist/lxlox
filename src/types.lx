@@ -44,6 +44,7 @@ types.TOKEN = {
     LESS: iota(),
     LESS_EQUAL: iota(),
     DOT_BRACE: iota(),
+    MINUS_GREATER: iota(),
 
     // Literals.
     IDENTIFIER: {
@@ -134,6 +135,7 @@ types.OP = {
     CLOSURE: iota(),
     CLOSE_UPVALUE: iota(),
     RETURN: iota(),
+    SWAP: iota(),
   }
 }
 
