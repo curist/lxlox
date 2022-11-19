@@ -1,3 +1,11 @@
+print("asdf")
+// XXX: asdlfkj
+
 "asdf"->print()
 
+fn myfunc() { }
+
+myfunc()
+
 range(10)->append("okay")->each(_1(print))
+each(append(range(10), "okay"), _1(print))
