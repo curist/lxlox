@@ -111,10 +111,8 @@ types.OP = {
     SET_GLOBAL: iota(),
     GET_UPVALUE: iota(),
     SET_UPVALUE: iota(),
-    GET_PROPERTY: iota(),
-    SET_PROPERTY: iota(),
-    GET_BY_INDEX: iota(), // XXX: unify COLLection related op name
-    SET_BY_INDEX: iota(), // XXX: unify COLLection related op name
+    GET_BY_INDEX: iota(),
+    SET_BY_INDEX: iota(),
     GREATER: iota(),
     LESS: iota(),
     ADD: iota(),
@@ -128,10 +126,10 @@ types.OP = {
     JUMP_IF_TRUE: iota(),
     JUMP_IF_FALSE: iota(),
     LOOP: iota(),
-    ASSOC: iota(), // XXX: unify COLLection related op name
-    APPEND: iota(), // XXX: unify COLLection related op name
-    HASHMAP: iota(), // XXX: unify COLLection related op name
-    ARRAY: iota(), // XXX: unify COLLection related op name
+    ASSOC: iota(),
+    APPEND: iota(),
+    HASHMAP: iota(),
+    ARRAY: iota(),
     CALL: iota(),
     CLOSURE: iota(),
     CLOSE_UPVALUE: iota(),

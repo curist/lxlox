@@ -630,13 +630,13 @@ fn compile(src, filename, opts) {
 
   fn dot(canAssign) {
     consume(TOKEN.IDENTIFIER, "Expect property name after '.'.")
-    let name = identifierConstant(parser.previous.lexeme)
+    emitConstant(ObjectString(parser.previous.lexeme), parser.previous.line)
 
     if canAssign and match(TOKEN.EQUAL) {
       expression()
-      emitBytes(OP.SET_PROPERTY, name, parser.previous.line)
+      emitByte(OP.SET_BY_INDEX, parser.previous.line)
     } else {
-      emitBytes(OP.GET_PROPERTY, name, parser.previous.line)
+      emitByte(OP.GET_BY_INDEX, parser.previous.line)
     }
   }
 
