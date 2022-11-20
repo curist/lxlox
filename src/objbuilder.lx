@@ -56,23 +56,23 @@ let ChunkType = .{
 fn int32ToBytes(num) {
   // always return 4 bytes
   let bytes = [0, 0, 0, 0]
-  bytes[0] = lib.tohex(num % 256)
-  num = lib.floor(num / 256)
-  bytes[1] = lib.tohex(num % 256)
-  num = lib.floor(num / 256)
-  bytes[2] = lib.tohex(num % 256)
-  num = lib.floor(num / 256)
-  bytes[3] = lib.tohex(num % 256)
+  bytes[0] = lib.tohex(num & 255)
+  num = num >> 8
+  bytes[1] = lib.tohex(num & 255)
+  num = num >> 8
+  bytes[2] = lib.tohex(num & 255)
+  num = num >> 8
+  bytes[3] = lib.tohex(num & 255)
   return bytes
 }
 
 fn numberToDoubleBytes(num) {
   if num > 256*256 { return ["ff", "ff"] }
   let bytes = [0, 0]
-  bytes[0] = lib.tohex(num % 256)
-  num = lib.floor(num / 256)
-  bytes[1] = lib.tohex(num % 256)
-  num = lib.floor(num / 256)
+  bytes[0] = lib.tohex(num & 255)
+  num = num >> 8
+  bytes[1] = lib.tohex(num & 255)
+  num = num >> 8
   return bytes
 }
 
