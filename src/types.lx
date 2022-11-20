@@ -101,6 +101,7 @@ types.OP = {
     EQUAL: iota(),
     POP: iota(),
     DUP: iota(),
+    SWAP: iota(),
     NEW_LOCAL: iota(),
     POP_LOCAL: iota(),
     GET_LOCAL: iota(),
@@ -135,7 +136,6 @@ types.OP = {
     CLOSURE: iota(),
     CLOSE_UPVALUE: iota(),
     RETURN: iota(),
-    SWAP: iota(),
   }
 }
 
