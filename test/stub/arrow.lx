@@ -1,11 +1,14 @@
-print("asdf")
-// XXX: asdlfkj
+let a = range(11)->map(fn(x) { x * x })
 
-"asdf"->print()
+each(a, _1(print))
 
-fn myfunc() { }
+range(101)
+  -> map(fn(x) { x * x })
+  -> fold(0, fn(a, b) { a + b })
+  -> print()
 
-myfunc()
+fn add(a, b) { a + b }
+print("sum of 0~100:", range(101)->fold(0, add))
 
-range(10)->append("okay")->each(_1(print))
-each(append(range(10), "okay"), _1(print))
+print("...and... hello world!!")
+
