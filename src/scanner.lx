@@ -196,6 +196,16 @@ fn initScanner(src) {
     Token(isKeyword and TOKEN[Lx.toUpperCase(lexeme)] or TOKEN.IDENTIFIER)
   }
 
+  fn shebang() {
+    let c = peek()
+    if c == "#" {
+      if peekNext() == "!" {
+        for peek() != "\n" and !isAtEnd() { advance() }
+      }
+    }
+  }
+
+  shebang()
 
   return .{
     scanToken: fn() {
