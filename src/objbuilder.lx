@@ -84,7 +84,11 @@ fn doubleToBytes(num) {
 
 fn stringToBytes(s) {
   fold(range(s), [], fn(bytes, c) {
-    push(bytes, lib.tohex(ord(c)))
+    if len(c) > 1 {
+      concat(bytes, map(range(len(c)), fn(i) { lib.tohex(ord(c[i])) } ))
+    } else {
+      push(bytes, lib.tohex(ord(c)))
+    }
   })
 }
 

@@ -49,10 +49,32 @@ fn initScanner(src) {
     line: state.line,
   }}
 
+  fn peekAtIndex(index) {
+    let charLength = {
+      let val = ord(src[index])
+      if val < 128 {
+        1
+      } else if val < 224 {
+        2
+      } else if val < 240 {
+        3
+      } else {
+        4
+      }
+    }
+    return .{
+      length: charLength,
+      s: range(charLength)->fold("", fn(s, i) {
+        s + src[index + i]
+      }),
+    }
+  }
+
   fn advance() {
     let current = state.current
-    state.current = current + 1
-    return src[current]
+    let result = peekAtIndex(current)
+    state.current = current + result.length
+    return result.s
   }
 
   fn match(expected) {
@@ -68,11 +90,11 @@ fn initScanner(src) {
 
   fn peek() {
     if isAtEnd() { return "" }
-    src[state.current]
+    peekAtIndex(state.current).s
   }
 
   fn peekNext() {
-    if isAtEnd() { nil } else src[state.current + 1]
+    if isAtEnd() { nil } else peekAtIndex(state.current + 1).s
   }
 
   fn skipWhitespace() {

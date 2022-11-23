@@ -28,4 +28,8 @@ test("pretty print", fn(assert) {
   assert.equal(r, "[]")
 })
 
+test("unicode", fn(assert) {
+  assert.equal(len("你好世界"), 12)
+})
+
 suite.run()
