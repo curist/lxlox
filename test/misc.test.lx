@@ -30,6 +30,8 @@ test("pretty print", fn(assert) {
 
 test("unicode", fn(assert) {
   assert.equal(len("你好世界"), 12)
+  assert.equal(len("やれやれだぜ"), 18)
+  assert.equal(len(range("やれやれだぜ")), 6)
 })
 
 suite.run()
