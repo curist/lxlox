@@ -1,4 +1,4 @@
-let makeTestSuite = import "./makeTestSuite.lx"
+let makeTestSuite = import "test/makeTestSuite.lx"
 let suite = makeTestSuite()
 let test = suite.defineTest
 
@@ -22,7 +22,7 @@ test("concat", fn(assert) {
 test("pretty print", fn(assert) {
   let x = .{ a: 1, [100]: "b", c: [1, 2] }
   let r = lib.prettyprint(x)
-  assert.equal(r, "{100: \"b\", a: 1, c: [1,2]}")
+  assert.equal(r, "{a: 1, c: [1,2], 100: \"b\"}")
 
   r = lib.prettyprint([])
   assert.equal(r, "[]")

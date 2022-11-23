@@ -1,4 +1,4 @@
-let makeTestSuite = import "./makeTestSuite.lx"
+let makeTestSuite = import "test/makeTestSuite.lx"
 let suite = makeTestSuite()
 let test = suite.defineTest
 
@@ -9,7 +9,6 @@ let TOKEN = types.TOKEN
 test("scanner - basic", fn(assert) {
   let scanner = initScanner("let lib = require(\"foo\")")
   let token = scanner.scanToken()
-  assert.equal(str(keys(token)), "[type,lexeme,line]")
   assert.equal(token.type, TOKEN.LET)
 
   token = scanner.scanToken()
@@ -40,7 +39,6 @@ test("scanner - values", fn(assert) {
 
   token = scanner.scanToken()
   assert.equal(token.type, TOKEN.NUMBER)
-  assert.equal(str(keys(token)), "[type,lexeme,literal,line]")
   assert.equal(token.literal, 123.456)
 
   token = scanner.scanToken()
