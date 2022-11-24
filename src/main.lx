@@ -9,15 +9,13 @@ fn() {
     // TODO: proper args parsing
     let argsLength = len(Lx.args)
     let DEBUG_BUILD = false
-    let path
-    if argsLength == 3 and Lx.args[2] != "--debug" {
-      path = Lx.args[2]
-    } else if argsLength == 4 {
-      DEBUG_BUILD = Lx.args[2] == "--debug"
+    let path = Lx.args[2]
+    if path == "--debug" {
+      if argsLength <= 3 {
+        groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
+        Lx.exit(28)
+      }
       path = Lx.args[3]
-    } else {
-      groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
-      Lx.exit(28)
     }
 
     let source = slurp(path)
