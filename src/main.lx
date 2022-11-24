@@ -15,6 +15,7 @@ fn() {
         groan("Usage: " + Lx.args[0] + " compile [--debug] <path>")
         Lx.exit(28)
       }
+      DEBUG_BUILD = true
       path = Lx.args[3]
     }
 
