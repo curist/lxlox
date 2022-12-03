@@ -58,6 +58,9 @@ fn() {
       }
       __lx_result__ = objbuilder(result.function, false).bytes()
     },
+    lsp: fn() {
+      for true { groan(getline() or { break }) }
+    },
   }
 
   fn handleUnknownCommand() {
