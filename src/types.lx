@@ -88,7 +88,7 @@ types.TOKEN_NAME = enumNameMapper(types.TOKEN)
 types.KEYWORDS = fold(keys(types.TOKEN), .{}, fn(acc, k) {
   let enum = types.TOKEN[k]
   if enum >= 400 and enum < 500 {
-    acc[Lx.toLowerCase(k)] = true
+    acc[tolower(k)] = true
   }
   acc
 })

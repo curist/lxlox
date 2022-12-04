@@ -38,7 +38,7 @@ fn initScanner(src) {
     return .{
       type: TOKEN.NUMBER,
       lexeme: lexeme,
-      literal: lib.parseFloat(lexeme),
+      literal: tonumber(lexeme),
       line: state.line,
     }
   }
@@ -215,7 +215,7 @@ fn initScanner(src) {
     let lexeme = getLexeme()
     let isKeyword = types.KEYWORDS[lexeme]
 
-    Token(isKeyword and TOKEN[Lx.toUpperCase(lexeme)] or TOKEN.IDENTIFIER)
+    Token(isKeyword and TOKEN[toupper(lexeme)] or TOKEN.IDENTIFIER)
   }
 
   fn shebang() {
